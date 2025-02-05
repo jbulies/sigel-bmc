@@ -4,10 +4,11 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import UserTable from "@/components/users/UserTable";
 import InviteUserDialog from "@/components/users/InviteUserDialog";
+import PendingInvitationsTable from "@/components/users/PendingInvitationsTable";
 import { User } from "@/types/user";
 import { toast } from "sonner";
 
-// Mock data - will be replaced with real data later
+// Mock data - será reemplazado con datos reales de la base de datos
 const mockUsers: User[] = [
   {
     id: 1,
@@ -73,8 +74,8 @@ const Users = () => {
       </div>
 
       <Card>
-        <div className="p-6">
-          <div className="relative mb-6">
+        <div className="p-6 space-y-8">
+          <div className="relative">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
             <Input
               placeholder="Buscar usuarios..."
@@ -89,6 +90,12 @@ const Users = () => {
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}
           />
+        </div>
+      </Card>
+
+      <Card>
+        <div className="p-6">
+          <PendingInvitationsTable />
         </div>
       </Card>
     </div>
