@@ -56,13 +56,13 @@ const Sidebar = () => {
       <aside
         className={cn(
           "fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out",
-          "bg-card border-r border-border shadow-lg",
+          "bg-card shadow-lg",
           "w-64 lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
         )}
       >
         <div className="flex flex-col h-full">
-          <div className="p-6 border-b border-border">
+          <div className="h-[65px] flex items-center px-6 border-b border-border">
             <h1 className="text-2xl font-semibold text-primary">SIGEL</h1>
           </div>
 

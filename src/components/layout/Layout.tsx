@@ -11,8 +11,8 @@ const Layout = ({ children }: LayoutProps) => {
     <div className="min-h-screen bg-background">
       <Sidebar />
       <Header />
-      <main className="lg:pl-64 pt-16 transition-all duration-300">
-        <div className="container py-8">{children}</div>
+      <main className="lg:pl-64 pt-[65px] transition-all duration-300">
+        <div className="container py-6">{children}</div>
       </main>
     </div>
   );
