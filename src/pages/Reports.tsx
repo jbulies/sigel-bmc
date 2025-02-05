@@ -9,14 +9,21 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Edit, Trash2, FileDown } from "lucide-react";
+import { Edit, Trash2, FileDown, ChevronDown } from "lucide-react";
 import { isWithinInterval, parseISO } from "date-fns";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
+import { useIsMobile } from "@/hooks/use-mobile";
 
 const Reports = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const isMobile = useIsMobile();
   const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [department, setDepartment] = useState("all");
@@ -139,9 +146,60 @@ const Reports = () => {
     return false;
   };
 
+  const MobileReportCard = ({ report }: { report: Report }) => (
+    <Collapsible className="border rounded-lg p-4 mb-4">
+      <div className="flex items-center justify-between">
+        <div>
+          <h3 className="font-medium">{report.title}</h3>
+          <p className="text-sm text-muted-foreground">ID: {report.id}</p>
+        </div>
+        <CollapsibleTrigger>
+          <ChevronDown className="h-5 w-5" />
+        </CollapsibleTrigger>
+      </div>
+      <CollapsibleContent className="mt-4 space-y-2">
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <p className="text-sm font-medium">Estado</p>
+            <Badge className={getStatusColor(report.status)}>{report.status}</Badge>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Prioridad</p>
+            <Badge className={getPriorityColor(report.priority)}>{report.priority}</Badge>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Departamento</p>
+            <p>{report.department}</p>
+          </div>
+          <div>
+            <p className="text-sm font-medium">Creado por</p>
+            <p>{report.created_by_name}</p>
+          </div>
+        </div>
+        {canEditReport(report) && (
+          <div className="flex gap-2 mt-4">
+            <Button variant="outline" size="sm" className="flex-1">
+              <Edit className="h-4 w-4 mr-2" />
+              Editar
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="flex-1"
+              onClick={() => handleDelete(report.id)}
+            >
+              <Trash2 className="h-4 w-4 mr-2" />
+              Eliminar
+            </Button>
+          </div>
+        )}
+      </CollapsibleContent>
+    </Collapsible>
+  );
+
   return (
     <div className="space-y-8 animate-fade-in">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold">Reportes</h1>
           <p className="text-muted-foreground mt-2">
@@ -157,7 +215,7 @@ const Reports = () => {
         </div>
       </div>
 
-      <Card className="p-6">
+      <Card className="p-4 sm:p-6">
         <ReportFilters
           search={search}
           setSearch={setSearch}
@@ -173,66 +231,74 @@ const Reports = () => {
 
         {isLoading ? (
           <div>Cargando reportes...</div>
+        ) : isMobile ? (
+          <div className="space-y-4">
+            {filteredReports?.map((report) => (
+              <MobileReportCard key={report.id} report={report} />
+            ))}
+          </div>
         ) : (
-          <Table>
-            <TableHeader>
-              <TableRow>
-                <TableHead>ID</TableHead>
-                <TableHead>Título</TableHead>
-                <TableHead>Estado</TableHead>
-                <TableHead>Prioridad</TableHead>
-                <TableHead>Departamento</TableHead>
-                <TableHead>Creado por</TableHead>
-                <TableHead>Fecha</TableHead>
-                <TableHead>Acciones</TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {filteredReports?.map((report) => (
-                <TableRow key={report.id}>
-                  <TableCell>{report.id}</TableCell>
-                  <TableCell>{report.title}</TableCell>
-                  <TableCell>
-                    <Badge className={getStatusColor(report.status)}>
-                      {report.status}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>
-                    <Badge className={getPriorityColor(report.priority)}>
-                      {report.priority}
-                    </Badge>
-                  </TableCell>
-                  <TableCell>{report.department}</TableCell>
-                  <TableCell>{report.created_by_name}</TableCell>
-                  <TableCell>
-                    {new Date(report.created_at).toLocaleDateString()}
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex gap-2">
-                      {canEditReport(report) && (
-                        <>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => {/* Implementar edición */}}
-                          >
-                            <Edit className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            onClick={() => handleDelete(report.id)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </>
-                      )}
-                    </div>
-                  </TableCell>
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Título</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Prioridad</TableHead>
+                  <TableHead>Departamento</TableHead>
+                  <TableHead>Creado por</TableHead>
+                  <TableHead>Fecha</TableHead>
+                  <TableHead>Acciones</TableHead>
                 </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+              </TableHeader>
+              <TableBody>
+                {filteredReports?.map((report) => (
+                  <TableRow key={report.id}>
+                    <TableCell>{report.id}</TableCell>
+                    <TableCell>{report.title}</TableCell>
+                    <TableCell>
+                      <Badge className={getStatusColor(report.status)}>
+                        {report.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge className={getPriorityColor(report.priority)}>
+                        {report.priority}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{report.department}</TableCell>
+                    <TableCell>{report.created_by_name}</TableCell>
+                    <TableCell>
+                      {new Date(report.created_at).toLocaleDateString()}
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex gap-2">
+                        {canEditReport(report) && (
+                          <>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => {/* Implementar edición */}}
+                            >
+                              <Edit className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              onClick={() => handleDelete(report.id)}
+                            >
+                              <Trash2 className="h-4 w-4" />
+                            </Button>
+                          </>
+                        )}
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         )}
       </Card>
     </div>

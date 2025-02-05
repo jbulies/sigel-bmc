@@ -1,6 +1,5 @@
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ReportStatus, ReportDepartment } from "@/types/report";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Button } from "@/components/ui/button";
@@ -34,8 +33,8 @@ export function ReportFilters({
   setDateTo,
 }: ReportFiltersProps) {
   return (
-    <div className="flex flex-col md:flex-row gap-4 mb-6">
-      <div className="flex-1">
+    <div className="flex flex-col gap-4 mb-6">
+      <div className="w-full">
         <Input
           placeholder="Buscar por título..."
           value={search}
@@ -43,7 +42,7 @@ export function ReportFilters({
           className="w-full"
         />
       </div>
-      <div className="w-full md:w-48">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger>
             <SelectValue placeholder="Estado" />
@@ -55,8 +54,6 @@ export function ReportFilters({
             <SelectItem value="Resuelto">Resuelto</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      <div className="w-full md:w-48">
         <Select value={department} onValueChange={setDepartment}>
           <SelectTrigger>
             <SelectValue placeholder="Departamento" />
@@ -67,8 +64,6 @@ export function ReportFilters({
             <SelectItem value="Informática">Informática</SelectItem>
           </SelectContent>
         </Select>
-      </div>
-      <div className="w-full md:w-48">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -82,11 +77,10 @@ export function ReportFilters({
               selected={dateFrom}
               onSelect={setDateFrom}
               initialFocus
+              locale={es}
             />
           </PopoverContent>
         </Popover>
-      </div>
-      <div className="w-full md:w-48">
         <Popover>
           <PopoverTrigger asChild>
             <Button variant="outline" className="w-full justify-start text-left font-normal">
@@ -100,6 +94,7 @@ export function ReportFilters({
               selected={dateTo}
               onSelect={setDateTo}
               initialFocus
+              locale={es}
             />
           </PopoverContent>
         </Popover>
