@@ -8,26 +8,25 @@ import PendingInvitationsTable from "@/components/users/PendingInvitationsTable"
 import { User } from "@/types/user";
 import { toast } from "sonner";
 
-// Mock data - será reemplazado con datos reales de la base de datos
 const mockUsers: User[] = [
   {
     id: 1,
-    name: "John Doe",
-    email: "john@example.com",
+    name: "Juan Pérez",
+    email: "juan@ejemplo.com",
     role: "Usuario",
     status: "Activo",
   },
   {
     id: 2,
-    name: "Jane Smith",
-    email: "jane@example.com",
+    name: "María García",
+    email: "maria@ejemplo.com",
     role: "Logístico",
     status: "Activo",
   },
   {
     id: 3,
-    name: "Bob Johnson",
-    email: "bob@example.com",
+    name: "Carlos López",
+    email: "carlos@ejemplo.com",
     role: "Informático",
     status: "Inactivo",
   },

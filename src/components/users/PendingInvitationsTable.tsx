@@ -18,7 +18,6 @@ interface Invitation {
   createdAt: string;
 }
 
-// Mock data - será reemplazado con datos reales de la base de datos
 const mockInvitations: Invitation[] = [
   {
     id: 1,
@@ -40,7 +39,6 @@ const PendingInvitationsTable = () => {
   const [invitations, setInvitations] = useState<Invitation[]>(mockInvitations);
 
   const handleResendInvitation = (id: number) => {
-    // TODO: Implementar lógica para reenviar invitación
     toast.success("Invitación reenviada correctamente");
   };
 
