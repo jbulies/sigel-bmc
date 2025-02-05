@@ -1,6 +1,6 @@
 -- Crear la base de datos si no existe
-CREATE DATABASE IF NOT EXISTS app_db;
-USE app_db;
+CREATE DATABASE IF NOT EXISTS bmcgw_sigel;
+USE bmcgw_sigel;
 
 -- Tabla de usuarios
 CREATE TABLE users (
