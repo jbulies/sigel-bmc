@@ -2,7 +2,8 @@ import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import pool from '../config/database';
-import { sendInvitationEmail } from '../services/email.service';
+import { sendInvitationEmail, sendPasswordResetEmail } from '../services/email.service';
+import crypto from 'crypto';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -122,5 +123,69 @@ export const verifyInvitation = async (req: Request, res: Response) => {
   } catch (error) {
     console.error('Error al verificar invitación:', error);
     res.status(500).json({ message: 'Error al verificar invitación' });
+  }
+};
+
+export const requestPasswordReset = async (req: Request, res: Response) => {
+  try {
+    const { email } = req.body;
+
+    // Verificar si el usuario existe
+    const [users]: any = await pool.query(
+      'SELECT id FROM users WHERE email = ? AND status = "Activo"',
+      [email]
+    );
+
+    if (!users.length) {
+      return res.status(404).json({ message: 'Usuario no encontrado' });
+    }
+
+    // Generar token de recuperación
+    const resetToken = crypto.randomBytes(32).toString('hex');
+    const resetTokenExpiry = new Date(Date.now() + 3600000); // 1 hora
+
+    // Guardar token en la base de datos
+    await pool.query(
+      'UPDATE users SET reset_token = ?, reset_token_expires = ? WHERE id = ?',
+      [resetToken, resetTokenExpiry, users[0].id]
+    );
+
+    // Enviar email
+    await sendPasswordResetEmail(email, resetToken);
+
+    res.json({ message: 'Se ha enviado un enlace de recuperación a tu email' });
+  } catch (error) {
+    console.error('Error en recuperación de contraseña:', error);
+    res.status(500).json({ message: 'Error al procesar la solicitud' });
+  }
+};
+
+export const resetPassword = async (req: Request, res: Response) => {
+  try {
+    const { token, password } = req.body;
+
+    // Verificar token
+    const [users]: any = await pool.query(
+      'SELECT id FROM users WHERE reset_token = ? AND reset_token_expires > NOW()',
+      [token]
+    );
+
+    if (!users.length) {
+      return res.status(400).json({ message: 'Token inválido o expirado' });
+    }
+
+    // Hashear nueva contraseña
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    // Actualizar contraseña y limpiar token
+    await pool.query(
+      'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
+      [hashedPassword, users[0].id]
+    );
+
+    res.json({ message: 'Contraseña actualizada exitosamente' });
+  } catch (error) {
+    console.error('Error al resetear contraseña:', error);
+    res.status(500).json({ message: 'Error al resetear contraseña' });
   }
 };

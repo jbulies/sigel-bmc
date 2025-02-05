@@ -31,3 +31,23 @@ export const sendInvitationEmail = async (email: string, token: string) => {
 
   await transporter.sendMail(mailOptions);
 };
+
+export const sendPasswordResetEmail = async (email: string, token: string) => {
+  const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
+
+  const mailOptions = {
+    from: process.env.SMTP_USER,
+    to: email,
+    subject: 'Recuperación de contraseña',
+    html: `
+      <h1>Recuperación de contraseña</h1>
+      <p>Has solicitado restablecer tu contraseña.</p>
+      <p>Haz clic en el siguiente enlace para crear una nueva contraseña:</p>
+      <a href="${resetUrl}">Restablecer contraseña</a>
+      <p>Este enlace expirará en 1 hora.</p>
+      <p>Si no solicitaste este cambio, puedes ignorar este correo.</p>
+    `
+  };
+
+  await transporter.sendMail(mailOptions);
+};
