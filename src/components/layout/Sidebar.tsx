@@ -47,7 +47,11 @@ const Sidebar = () => {
   return (
     <>
       <button
-        className="lg:hidden fixed top-4 left-4 z-50 p-2 bg-background rounded-md shadow-md"
+        className={cn(
+          "lg:hidden fixed top-4 left-4 z-50 p-2 rounded-md shadow-md",
+          "transition-colors duration-200 ease-in-out",
+          "bg-background hover:bg-accent"
+        )}
         onClick={toggleSidebar}
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
@@ -55,7 +59,8 @@ const Sidebar = () => {
 
       <aside
         className={cn(
-          "fixed top-0 left-0 z-40 h-screen transition-transform duration-300 ease-in-out",
+          "fixed top-0 left-0 z-40 h-screen",
+          "transition-all duration-300 ease-in-out",
           "bg-card shadow-lg",
           "w-64 lg:translate-x-0",
           isOpen ? "translate-x-0" : "-translate-x-full"
@@ -72,11 +77,13 @@ const Sidebar = () => {
                 key={path}
                 to={path}
                 className={cn(
-                  "flex items-center gap-3 px-4 py-3 rounded-md transition-colors",
+                  "flex items-center gap-3 px-4 py-3 rounded-md",
+                  "transition-all duration-200 ease-in-out",
                   "hover:bg-accent hover:text-accent-foreground",
+                  "active:scale-[0.98]",
                   location.pathname === path
-                    ? "bg-primary text-primary-foreground"
-                    : "text-muted-foreground"
+                    ? "bg-primary text-primary-foreground shadow-sm"
+                    : "text-muted-foreground hover:text-foreground"
                 )}
               >
                 <Icon size={20} />
@@ -88,8 +95,14 @@ const Sidebar = () => {
           <div className="p-4 border-t border-border">
             <DropdownMenu>
               <DropdownMenuTrigger className="w-full">
-                <div className="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
-                  <div className="w-8 h-8 rounded-full bg-primary" />
+                <div className={cn(
+                  "flex items-center gap-3 px-4 py-2 rounded-md",
+                  "hover:bg-accent hover:text-accent-foreground",
+                  "transition-colors duration-200 ease-in-out"
+                )}>
+                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
+                    <User size={16} />
+                  </div>
                   <div className="text-left">
                     <p className="text-sm font-medium">Juan Pérez</p>
                     <p className="text-xs text-muted-foreground">{profile.role.administrator}</p>
@@ -102,7 +115,7 @@ const Sidebar = () => {
                   <span>{profile.myProfile}</span>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout}>
+                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
                   <LogOut className="mr-2 h-4 w-4" />
                   <span>{profile.logout}</span>
                 </DropdownMenuItem>
