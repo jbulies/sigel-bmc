@@ -35,7 +35,7 @@ export function ReportFilters({
             <SelectValue placeholder="Estado" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="Pendiente">Pendiente</SelectItem>
             <SelectItem value="En Progreso">En Progreso</SelectItem>
             <SelectItem value="Resuelto">Resuelto</SelectItem>
@@ -48,7 +48,7 @@ export function ReportFilters({
             <SelectValue placeholder="Departamento" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="">Todos</SelectItem>
+            <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="Logística">Logística</SelectItem>
             <SelectItem value="Informática">Informática</SelectItem>
           </SelectContent>

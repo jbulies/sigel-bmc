@@ -22,8 +22,8 @@ const Reports = () => {
   const { user } = useAuth();
   const { toast } = useToast();
   const [search, setSearch] = useState("");
-  const [status, setStatus] = useState("");
-  const [department, setDepartment] = useState("");
+  const [status, setStatus] = useState("all");
+  const [department, setDepartment] = useState("all");
 
   const { data: reports, isLoading, refetch } = useQuery({
     queryKey: ["reports"],
@@ -42,8 +42,8 @@ const Reports = () => {
     const matchesSearch = report.title
       .toLowerCase()
       .includes(search.toLowerCase());
-    const matchesStatus = status ? report.status === status : true;
-    const matchesDepartment = department ? report.department === department : true;
+    const matchesStatus = status === "all" ? true : report.status === status;
+    const matchesDepartment = department === "all" ? true : report.department === department;
     return matchesSearch && matchesStatus && matchesDepartment;
   });
 
