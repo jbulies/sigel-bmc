@@ -35,23 +35,33 @@ const mockUsers: User[] = [
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
+  const [users, setUsers] = useState(mockUsers);
 
-  const filteredUsers = mockUsers.filter(
+  const filteredUsers = users.filter(
     (user) =>
       user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleEditUser = (user: User) => {
-    // TODO: Implement edit user functionality
-    console.log("Editing user:", user);
-    toast.info("Función de edición en desarrollo");
+  const handleEditUser = (updatedUser: User) => {
+    setUsers(users.map(user => 
+      user.id === updatedUser.id ? updatedUser : user
+    ));
+    toast.success("Usuario actualizado correctamente");
   };
 
   const handleDeactivateUser = (user: User) => {
-    // TODO: Implement deactivate user functionality
-    console.log("Deactivating user:", user);
-    toast.info("Función de desactivación en desarrollo");
+    setUsers(users.map(u => 
+      u.id === user.id ? { ...u, status: "Inactivo" } : u
+    ));
+    toast.success("Usuario desactivado correctamente");
+  };
+
+  const handlePromoteToAdmin = (user: User) => {
+    setUsers(users.map(u => 
+      u.id === user.id ? { ...u, role: "Administrador" } : u
+    ));
+    toast.success(`${user.name} ahora es administrador`);
   };
 
   return (
@@ -85,6 +95,7 @@ const Users = () => {
             users={filteredUsers}
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}
+            onPromoteToAdmin={handlePromoteToAdmin}
           />
         </div>
       </Card>
