@@ -3,20 +3,16 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { CreateReportDialog } from "@/components/reports/CreateReportDialog";
 import { ReportFilters } from "@/components/reports/ReportFilters";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Report } from "@/types/report";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
-import { Edit, Trash2 } from "lucide-react";
+import { Edit, Trash2, FileDown } from "lucide-react";
+import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
+import { jsPDF } from "jspdf";
+import "jspdf-autotable";
 
 const Reports = () => {
   const { user } = useAuth();
@@ -24,6 +20,7 @@ const Reports = () => {
   const [search, setSearch] = useState("all");
   const [status, setStatus] = useState("all");
   const [department, setDepartment] = useState("all");
+  const [dateRange, setDateRange] = useState("all");
 
   const { data: reports, isLoading, refetch } = useQuery({
     queryKey: ["reports"],
@@ -38,13 +35,33 @@ const Reports = () => {
     },
   });
 
+  const getDateRange = () => {
+    const now = new Date();
+    switch (dateRange) {
+      case "week":
+        return { start: startOfWeek(now), end: endOfWeek(now) };
+      case "month":
+        return { start: startOfMonth(now), end: endOfMonth(now) };
+      case "year":
+        return { start: startOfYear(now), end: endOfYear(now) };
+      default:
+        return null;
+    }
+  };
+
   const filteredReports = reports?.filter((report) => {
-    const matchesSearch = report.title
-      .toLowerCase()
-      .includes(search.toLowerCase());
-    const matchesStatus = status === "all" ? true : report.status === status;
-    const matchesDepartment = department === "all" ? true : report.department === department;
-    return matchesSearch && matchesStatus && matchesDepartment;
+    const matchesSearch = search === "all" || report.title.toLowerCase().includes(search.toLowerCase());
+    const matchesStatus = status === "all" || report.status === status;
+    const matchesDepartment = department === "all" || report.department === department;
+    
+    let matchesDate = true;
+    const range = getDateRange();
+    if (range) {
+      const reportDate = new Date(report.created_at);
+      matchesDate = isWithinInterval(reportDate, range);
+    }
+
+    return matchesSearch && matchesStatus && matchesDepartment && matchesDate;
   });
 
   const handleDelete = async (id: number) => {
@@ -71,6 +88,29 @@ const Reports = () => {
         variant: "destructive",
       });
     }
+  };
+
+  const exportToPDF = () => {
+    if (!filteredReports?.length) return;
+
+    const doc = new jsPDF();
+    const tableColumn = ["ID", "Título", "Estado", "Prioridad", "Departamento", "Creado por", "Fecha"];
+    const tableRows = filteredReports.map((report) => [
+      report.id,
+      report.title,
+      report.status,
+      report.priority,
+      report.department,
+      report.created_by_name,
+      new Date(report.created_at).toLocaleDateString(),
+    ]);
+
+    doc.autoTable({
+      head: [tableColumn],
+      body: tableRows,
+    });
+
+    doc.save("reportes.pdf");
   };
 
   const getStatusColor = (status: Report["status"]) => {
@@ -115,7 +155,13 @@ const Reports = () => {
             Gestiona y da seguimiento a todos los reportes
           </p>
         </div>
-        <CreateReportDialog />
+        <div className="flex gap-4">
+          <Button variant="outline" onClick={exportToPDF}>
+            <FileDown className="h-4 w-4 mr-2" />
+            Exportar a PDF
+          </Button>
+          <CreateReportDialog />
+        </div>
       </div>
 
       <Card className="p-6">
@@ -126,6 +172,8 @@ const Reports = () => {
           setStatus={setStatus}
           department={department}
           setDepartment={setDepartment}
+          dateRange={dateRange}
+          setDateRange={setDateRange}
         />
 
         {isLoading ? (

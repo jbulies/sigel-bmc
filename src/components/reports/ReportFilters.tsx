@@ -9,6 +9,8 @@ interface ReportFiltersProps {
   setStatus: (value: string) => void;
   department: string;
   setDepartment: (value: string) => void;
+  dateRange: string;
+  setDateRange: (value: string) => void;
 }
 
 export function ReportFilters({
@@ -18,6 +20,8 @@ export function ReportFilters({
   setStatus,
   department,
   setDepartment,
+  dateRange,
+  setDateRange,
 }: ReportFiltersProps) {
   return (
     <div className="flex flex-col md:flex-row gap-4 mb-6">
@@ -51,6 +55,19 @@ export function ReportFilters({
             <SelectItem value="all">Todos</SelectItem>
             <SelectItem value="Logística">Logística</SelectItem>
             <SelectItem value="Informática">Informática</SelectItem>
+          </SelectContent>
+        </Select>
+      </div>
+      <div className="w-full md:w-48">
+        <Select value={dateRange} onValueChange={setDateRange}>
+          <SelectTrigger>
+            <SelectValue placeholder="Rango de fecha" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todo</SelectItem>
+            <SelectItem value="week">Esta semana</SelectItem>
+            <SelectItem value="month">Este mes</SelectItem>
+            <SelectItem value="year">Este año</SelectItem>
           </SelectContent>
         </Select>
       </div>
