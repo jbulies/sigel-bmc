@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -7,14 +7,27 @@ import {
   Users, 
   Settings,
   Menu,
-  X
+  X,
+  LogOut,
+  User
 } from "lucide-react";
 import { translations } from "@/translations/es";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useAuth } from "@/contexts/AuthContext";
+import { toast } from "sonner";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
+  const navigate = useNavigate();
   const { menu, profile } = translations;
+  const { logout } = useAuth();
 
   const menuItems = [
     { icon: LayoutDashboard, label: menu.dashboard, path: "/" },
@@ -24,6 +37,12 @@ const Sidebar = () => {
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
+
+  const handleLogout = async () => {
+    await logout();
+    toast.success("Sesión cerrada exitosamente");
+    navigate("/auth/login");
+  };
 
   return (
     <>
@@ -67,13 +86,28 @@ const Sidebar = () => {
           </nav>
 
           <div className="p-4 border-t border-border">
-            <div className="flex items-center gap-3 px-4 py-2">
-              <div className="w-8 h-8 rounded-full bg-primary" />
-              <div>
-                <p className="text-sm font-medium">Juan Pérez</p>
-                <p className="text-xs text-muted-foreground">{profile.role.administrator}</p>
-              </div>
-            </div>
+            <DropdownMenu>
+              <DropdownMenuTrigger className="w-full">
+                <div className="flex items-center gap-3 px-4 py-2 rounded-md hover:bg-accent hover:text-accent-foreground transition-colors">
+                  <div className="w-8 h-8 rounded-full bg-primary" />
+                  <div className="text-left">
+                    <p className="text-sm font-medium">Juan Pérez</p>
+                    <p className="text-xs text-muted-foreground">{profile.role.administrator}</p>
+                  </div>
+                </div>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="w-56">
+                <DropdownMenuItem onClick={() => navigate("/profile")}>
+                  <User className="mr-2 h-4 w-4" />
+                  <span>{profile.myProfile}</span>
+                </DropdownMenuItem>
+                <DropdownMenuSeparator />
+                <DropdownMenuItem onClick={handleLogout}>
+                  <LogOut className="mr-2 h-4 w-4" />
+                  <span>{profile.logout}</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
       </aside>
