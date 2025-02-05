@@ -11,7 +11,7 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: '*', // Temporalmente permitimos todos los orígenes para debugging
+  origin: process.env.NODE_ENV === 'production' ? process.env.FRONTEND_URL : '*',
   credentials: true
 }));
 app.use(express.json());
@@ -35,8 +35,10 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
   });
 });
 
+// Get port from environment or use default
 const PORT = process.env.PORT || 3001;
 
+// Start server with explicit host binding
 const server = app.listen(PORT, '0.0.0.0', () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Environment:', process.env.NODE_ENV);
