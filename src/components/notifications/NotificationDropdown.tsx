@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -8,41 +8,47 @@ import {
 import { Button } from "@/components/ui/button";
 import { Bell } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 interface Notification {
   id: number;
   title: string;
   message: string;
   read: boolean;
-  createdAt: string;
+  created_at: string;
 }
 
-const mockNotifications: Notification[] = [
-  {
-    id: 1,
-    title: "Nuevo reporte",
-    message: "Se ha generado un nuevo reporte de ventas",
-    read: false,
-    createdAt: "2024-03-10T10:00:00",
-  },
-  {
-    id: 2,
-    title: "Usuario actualizado",
-    message: "Se actualizó la información del usuario Juan Pérez",
-    read: true,
-    createdAt: "2024-03-09T15:30:00",
-  },
-];
-
 const NotificationDropdown = () => {
-  const [notifications, setNotifications] = useState<Notification[]>(mockNotifications);
-  const unreadCount = notifications.filter((n) => !n.read).length;
+  const { data: notifications = [], refetch } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: async () => {
+      const response = await fetch('/api/notifications', {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error('Error al cargar notificaciones');
+      return response.json();
+    },
+  });
 
-  const markAsRead = (id: number) => {
-    setNotifications(notifications.map((n) =>
-      n.id === id ? { ...n, read: true } : n
-    ));
-  };
+  const markAsReadMutation = useMutation({
+    mutationFn: async (id: number) => {
+      const response = await fetch(`/api/notifications/${id}/read`, {
+        method: 'PUT',
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`,
+        },
+      });
+      if (!response.ok) throw new Error('Error al marcar como leída');
+      return response.json();
+    },
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const unreadCount = notifications.filter((n: Notification) => !n.read).length;
 
   return (
     <DropdownMenu>
@@ -64,17 +70,17 @@ const NotificationDropdown = () => {
           </p>
         </div>
         <ScrollArea className="h-[300px]">
-          {notifications.map((notification) => (
+          {notifications.map((notification: Notification) => (
             <DropdownMenuItem
               key={notification.id}
               className={`p-4 cursor-pointer ${!notification.read ? 'bg-accent' : ''}`}
-              onClick={() => markAsRead(notification.id)}
+              onClick={() => markAsReadMutation.mutate(notification.id)}
             >
               <div className="space-y-1">
                 <p className="font-medium">{notification.title}</p>
                 <p className="text-sm text-muted-foreground">{notification.message}</p>
                 <p className="text-xs text-muted-foreground">
-                  {new Date(notification.createdAt).toLocaleString()}
+                  {new Date(notification.created_at).toLocaleString()}
                 </p>
               </div>
             </DropdownMenuItem>

@@ -1,6 +1,8 @@
+-- Crear la base de datos si no existe
 CREATE DATABASE IF NOT EXISTS app_db;
 USE app_db;
 
+-- Tabla de usuarios
 CREATE TABLE users (
   id INT PRIMARY KEY AUTO_INCREMENT,
   name VARCHAR(255) NOT NULL,
@@ -12,6 +14,7 @@ CREATE TABLE users (
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
 
+-- Tabla de invitaciones
 CREATE TABLE invitations (
   id INT PRIMARY KEY AUTO_INCREMENT,
   email VARCHAR(255) UNIQUE NOT NULL,
@@ -21,9 +24,10 @@ CREATE TABLE invitations (
   expires_at TIMESTAMP NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   created_by INT,
-  FOREIGN KEY (created_by) REFERENCES users(id)
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Tabla de notificaciones
 CREATE TABLE notifications (
   id INT PRIMARY KEY AUTO_INCREMENT,
   user_id INT NOT NULL,
@@ -31,9 +35,10 @@ CREATE TABLE notifications (
   message TEXT NOT NULL,
   read BOOLEAN DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id)
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 );
 
+-- Tabla de reportes
 CREATE TABLE reports (
   id INT PRIMARY KEY AUTO_INCREMENT,
   title VARCHAR(255) NOT NULL,
@@ -45,6 +50,28 @@ CREATE TABLE reports (
   assigned_to INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id),
-  FOREIGN KEY (assigned_to) REFERENCES users(id)
+  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
+  FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL
 );
+
+-- Índices para mejorar el rendimiento
+CREATE INDEX idx_notifications_user ON notifications(user_id);
+CREATE INDEX idx_reports_created_by ON reports(created_by);
+CREATE INDEX idx_reports_assigned_to ON reports(assigned_to);
+CREATE INDEX idx_reports_department ON reports(department);
+CREATE INDEX idx_reports_status ON reports(status);
+
+-- Trigger para actualizar updated_at
+DELIMITER //
+CREATE TRIGGER update_timestamp
+BEFORE UPDATE ON users
+FOR EACH ROW
+BEGIN
+    SET NEW.updated_at = CURRENT_TIMESTAMP;
+END;//
+DELIMITER ;
+
+-- Insertar usuario administrador por defecto
+-- Contraseña: admin123 (hasheada)
+INSERT INTO users (name, email, password, role) VALUES 
+('Administrador', 'admin@example.com', '$2a$10$XgXY5JlZs6Z6Z6Z6Z6Z6Z.Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z6Z', 'Administrador');

@@ -90,15 +90,48 @@ const Reports = () => {
     if (!filteredReports?.length) return;
 
     const doc = new jsPDF();
+    
+    // Añadir título
+    doc.setFontSize(20);
+    doc.text('Reporte de Incidencias', 14, 20);
+    doc.setFontSize(12);
+    doc.text(`Generado el ${new Date().toLocaleDateString()}`, 14, 30);
+
+    // Configurar estilos para la tabla
+    const styles = {
+      font: 'helvetica',
+      fontStyle: 'normal',
+      fontSize: 10,
+    };
+
+    const getStatusStyle = (status: string) => {
+      switch (status) {
+        case 'Pendiente': return { textColor: [255, 140, 0] }; // Naranja
+        case 'En Progreso': return { textColor: [0, 0, 255] }; // Azul
+        case 'Resuelto': return { textColor: [0, 128, 0] }; // Verde
+        default: return { textColor: [0, 0, 0] }; // Negro
+      }
+    };
+
+    const getPriorityStyle = (priority: string) => {
+      switch (priority) {
+        case 'Alta': return { textColor: [255, 0, 0] }; // Rojo
+        case 'Media': return { textColor: [255, 140, 0] }; // Naranja
+        case 'Baja': return { textColor: [0, 128, 0] }; // Verde
+        default: return { textColor: [0, 0, 0] }; // Negro
+      }
+    };
+
     const tableColumn = [
       "ID",
-      translations.reports.title,
-      translations.reports.status.label,
-      translations.reports.priority,
-      translations.reports.department,
-      translations.reports.createdBy,
-      translations.reports.date
+      "Título",
+      "Estado",
+      "Prioridad",
+      "Departamento",
+      "Creado por",
+      "Fecha"
     ];
+
     const tableRows = filteredReports.map((report) => [
       report.id,
       report.title,
@@ -110,11 +143,38 @@ const Reports = () => {
     ]);
 
     autoTable(doc, {
-      columns: tableColumn.map(title => ({ header: title })),
-      body: tableRows
+      startY: 40,
+      head: [tableColumn],
+      body: tableRows,
+      styles,
+      columnStyles: {
+        0: { cellWidth: 20 }, // ID
+        1: { cellWidth: 40 }, // Título
+        2: { cellWidth: 25 }, // Estado
+        3: { cellWidth: 25 }, // Prioridad
+        4: { cellWidth: 30 }, // Departamento
+        5: { cellWidth: 30 }, // Creado por
+        6: { cellWidth: 25 }, // Fecha
+      },
+      didDrawCell: (data) => {
+        if (data.section === 'body') {
+          const status = tableRows[data.row.index][2];
+          const priority = tableRows[data.row.index][3];
+          
+          if (data.column.index === 2) {
+            const statusStyle = getStatusStyle(status);
+            doc.setTextColor(...statusStyle.textColor);
+          } else if (data.column.index === 3) {
+            const priorityStyle = getPriorityStyle(priority);
+            doc.setTextColor(...priorityStyle.textColor);
+          } else {
+            doc.setTextColor(0, 0, 0);
+          }
+        }
+      },
     });
 
-    doc.save("reportes.pdf");
+    doc.save("reporte-incidencias.pdf");
   };
 
   const canEditReport = (report: Report) => {
