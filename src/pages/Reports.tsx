@@ -12,7 +12,15 @@ import { useToast } from "@/components/ui/use-toast";
 import { Edit, Trash2, FileDown } from "lucide-react";
 import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
 import { jsPDF } from "jspdf";
-import "jspdf-autotable";
+import 'jspdf-autotable';
+import { UserConfig } from 'jspdf-autotable';
+
+// Extend jsPDF with autoTable
+declare module 'jspdf' {
+  interface jsPDF {
+    autoTable: (options: UserConfig) => jsPDF;
+  }
+}
 
 const Reports = () => {
   const { user } = useAuth();
