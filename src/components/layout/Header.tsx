@@ -9,14 +9,16 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
+import { translations } from "@/translations/es";
 
 const Header = () => {
   const { user, logout } = useAuth();
+  const { common, profile } = translations;
 
   return (
     <header className="h-16 border-b border-border bg-card/50 backdrop-blur-sm fixed top-0 right-0 left-0 z-30 flex items-center lg:left-64 transition-all duration-300">
       <div className="container flex items-center justify-between">
-        <h2 className="text-lg font-medium">Bienvenido a SIGEL</h2>
+        <h2 className="text-lg font-medium">{common.welcome}</h2>
         
         <div className="flex items-center gap-4">
           <NotificationDropdown />
@@ -31,12 +33,12 @@ const Header = () => {
               <DropdownMenuItem asChild>
                 <Link to="/profile" className="flex items-center">
                   <Settings className="mr-2 h-4 w-4" />
-                  <span>Mi Perfil</span>
+                  <span>{profile.myProfile}</span>
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem onClick={logout} className="text-red-600">
                 <LogOut className="mr-2 h-4 w-4" />
-                <span>Cerrar Sesión</span>
+                <span>{profile.logout}</span>
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

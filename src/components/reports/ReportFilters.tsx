@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarIcon } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { translations } from "@/translations/es";
 
 interface ReportFiltersProps {
   search: string;
@@ -32,11 +33,13 @@ export function ReportFilters({
   dateTo,
   setDateTo,
 }: ReportFiltersProps) {
+  const { reports } = translations;
+
   return (
-    <div className="flex flex-col gap-4 mb-6">
+    <div className="space-y-4 md:space-y-6">
       <div className="w-full">
         <Input
-          placeholder="Buscar por título..."
+          placeholder={reports.searchPlaceholder}
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           className="w-full"
@@ -44,60 +47,62 @@ export function ReportFilters({
       </div>
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         <Select value={status} onValueChange={setStatus}>
-          <SelectTrigger>
-            <SelectValue placeholder="Estado" />
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={reports.status.all} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="Pendiente">Pendiente</SelectItem>
-            <SelectItem value="En Progreso">En Progreso</SelectItem>
-            <SelectItem value="Resuelto">Resuelto</SelectItem>
+            <SelectItem value="all">{reports.status.all}</SelectItem>
+            <SelectItem value="Pendiente">{reports.status.pending}</SelectItem>
+            <SelectItem value="En Progreso">{reports.status.inProgress}</SelectItem>
+            <SelectItem value="Resuelto">{reports.status.resolved}</SelectItem>
           </SelectContent>
         </Select>
         <Select value={department} onValueChange={setDepartment}>
-          <SelectTrigger>
-            <SelectValue placeholder="Departamento" />
+          <SelectTrigger className="w-full">
+            <SelectValue placeholder={reports.departments.all} />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value="all">Todos</SelectItem>
-            <SelectItem value="Logística">Logística</SelectItem>
-            <SelectItem value="Informática">Informática</SelectItem>
+            <SelectItem value="all">{reports.departments.all}</SelectItem>
+            <SelectItem value="Logística">{reports.departments.logistics}</SelectItem>
+            <SelectItem value="Informática">{reports.departments.it}</SelectItem>
           </SelectContent>
         </Select>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start text-left font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateFrom ? format(dateFrom, 'PP', { locale: es }) : 'Fecha desde'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dateFrom}
-              onSelect={setDateFrom}
-              initialFocus
-              locale={es}
-            />
-          </PopoverContent>
-        </Popover>
-        <Popover>
-          <PopoverTrigger asChild>
-            <Button variant="outline" className="w-full justify-start text-left font-normal">
-              <CalendarIcon className="mr-2 h-4 w-4" />
-              {dateTo ? format(dateTo, 'PP', { locale: es }) : 'Fecha hasta'}
-            </Button>
-          </PopoverTrigger>
-          <PopoverContent className="w-auto p-0" align="start">
-            <Calendar
-              mode="single"
-              selected={dateTo}
-              onSelect={setDateTo}
-              initialFocus
-              locale={es}
-            />
-          </PopoverContent>
-        </Popover>
+        <div className="flex flex-col sm:flex-row gap-2">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateFrom ? format(dateFrom, 'PP', { locale: es }) : reports.dateFrom}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateFrom}
+                onSelect={setDateFrom}
+                initialFocus
+                locale={es}
+              />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button variant="outline" className="w-full justify-start text-left font-normal">
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {dateTo ? format(dateTo, 'PP', { locale: es }) : reports.dateTo}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={dateTo}
+                onSelect={setDateTo}
+                initialFocus
+                locale={es}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
       </div>
     </div>
   );
