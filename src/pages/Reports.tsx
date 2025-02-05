@@ -3,22 +3,18 @@ import { useQuery } from "@tanstack/react-query";
 import { Card } from "@/components/ui/card";
 import { CreateReportDialog } from "@/components/reports/CreateReportDialog";
 import { ReportFilters } from "@/components/reports/ReportFilters";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Report } from "@/types/report";
-import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/components/ui/use-toast";
-import { Edit, Trash2, FileDown, ChevronDown } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
+import { FileDown } from "lucide-react";
 import { isWithinInterval, parseISO } from "date-fns";
 import { jsPDF } from "jspdf";
 import autoTable from 'jspdf-autotable';
-import {
-  Collapsible,
-  CollapsibleContent,
-  CollapsibleTrigger,
-} from "@/components/ui/collapsible";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { ReportTable } from "@/components/reports/ReportTable";
+import { MobileReportCard } from "@/components/reports/MobileReportCard";
+import { translations } from "@/translations/es";
 
 const Reports = () => {
   const { user } = useAuth();
@@ -38,7 +34,7 @@ const Reports = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      if (!response.ok) throw new Error("Error al cargar los reportes");
+      if (!response.ok) throw new Error(translations.common.error);
       return response.json() as Promise<Report[]>;
     },
   });
@@ -73,18 +69,18 @@ const Reports = () => {
         },
       });
 
-      if (!response.ok) throw new Error("Error al eliminar el reporte");
+      if (!response.ok) throw new Error(translations.common.error);
 
       toast({
-        title: "Reporte eliminado",
-        description: "El reporte ha sido eliminado exitosamente",
+        title: translations.common.success,
+        description: translations.reports.deleteSuccess,
       });
 
       refetch();
     } catch (error) {
       toast({
-        title: "Error",
-        description: "No se pudo eliminar el reporte",
+        title: translations.common.error,
+        description: translations.common.error,
         variant: "destructive",
       });
     }
@@ -94,7 +90,15 @@ const Reports = () => {
     if (!filteredReports?.length) return;
 
     const doc = new jsPDF();
-    const tableColumn = ["ID", "Título", "Estado", "Prioridad", "Departamento", "Creado por", "Fecha"];
+    const tableColumn = [
+      "ID",
+      translations.reports.title,
+      translations.reports.status.label,
+      translations.reports.priority,
+      translations.reports.department,
+      translations.reports.createdBy,
+      translations.reports.date
+    ];
     const tableRows = filteredReports.map((report) => [
       report.id,
       report.title,
@@ -113,32 +117,6 @@ const Reports = () => {
     doc.save("reportes.pdf");
   };
 
-  const getStatusColor = (status: Report["status"]) => {
-    switch (status) {
-      case "Pendiente":
-        return "bg-yellow-500";
-      case "En Progreso":
-        return "bg-blue-500";
-      case "Resuelto":
-        return "bg-green-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
-  const getPriorityColor = (priority: Report["priority"]) => {
-    switch (priority) {
-      case "Alta":
-        return "bg-red-500";
-      case "Media":
-        return "bg-orange-500";
-      case "Baja":
-        return "bg-green-500";
-      default:
-        return "bg-gray-500";
-    }
-  };
-
   const canEditReport = (report: Report) => {
     if (user?.role === "Administrador") return true;
     if (user?.role === "Logístico" && report.department === "Logística") return true;
@@ -146,70 +124,23 @@ const Reports = () => {
     return false;
   };
 
-  const MobileReportCard = ({ report }: { report: Report }) => (
-    <Collapsible className="border rounded-lg p-4 mb-4">
-      <div className="flex items-center justify-between">
-        <div>
-          <h3 className="font-medium">{report.title}</h3>
-          <p className="text-sm text-muted-foreground">ID: {report.id}</p>
-        </div>
-        <CollapsibleTrigger>
-          <ChevronDown className="h-5 w-5" />
-        </CollapsibleTrigger>
-      </div>
-      <CollapsibleContent className="mt-4 space-y-2">
-        <div className="grid grid-cols-2 gap-2">
-          <div>
-            <p className="text-sm font-medium">Estado</p>
-            <Badge className={getStatusColor(report.status)}>{report.status}</Badge>
-          </div>
-          <div>
-            <p className="text-sm font-medium">Prioridad</p>
-            <Badge className={getPriorityColor(report.priority)}>{report.priority}</Badge>
-          </div>
-          <div>
-            <p className="text-sm font-medium">Departamento</p>
-            <p>{report.department}</p>
-          </div>
-          <div>
-            <p className="text-sm font-medium">Creado por</p>
-            <p>{report.created_by_name}</p>
-          </div>
-        </div>
-        {canEditReport(report) && (
-          <div className="flex gap-2 mt-4">
-            <Button variant="outline" size="sm" className="flex-1">
-              <Edit className="h-4 w-4 mr-2" />
-              Editar
-            </Button>
-            <Button
-              variant="outline"
-              size="sm"
-              className="flex-1"
-              onClick={() => handleDelete(report.id)}
-            >
-              <Trash2 className="h-4 w-4 mr-2" />
-              Eliminar
-            </Button>
-          </div>
-        )}
-      </CollapsibleContent>
-    </Collapsible>
-  );
+  const handleEdit = (report: Report) => {
+    // Implementar edición
+  };
 
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold">Reportes</h1>
+          <h1 className="text-3xl font-bold">{translations.reports.title}</h1>
           <p className="text-muted-foreground mt-2">
-            Gestiona y da seguimiento a todos los reportes
+            {translations.dashboard.subtitle}
           </p>
         </div>
         <div className="flex gap-4">
           <Button variant="outline" onClick={exportToPDF}>
             <FileDown className="h-4 w-4 mr-2" />
-            Exportar a PDF
+            {translations.reports.exportPDF}
           </Button>
           <CreateReportDialog />
         </div>
@@ -230,75 +161,26 @@ const Reports = () => {
         />
 
         {isLoading ? (
-          <div>Cargando reportes...</div>
+          <div className="text-center py-8">{translations.common.loading}</div>
         ) : isMobile ? (
           <div className="space-y-4">
             {filteredReports?.map((report) => (
-              <MobileReportCard key={report.id} report={report} />
+              <MobileReportCard
+                key={report.id}
+                report={report}
+                onDelete={handleDelete}
+                onEdit={handleEdit}
+                canEditReport={canEditReport}
+              />
             ))}
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Título</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Prioridad</TableHead>
-                  <TableHead>Departamento</TableHead>
-                  <TableHead>Creado por</TableHead>
-                  <TableHead>Fecha</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredReports?.map((report) => (
-                  <TableRow key={report.id}>
-                    <TableCell>{report.id}</TableCell>
-                    <TableCell>{report.title}</TableCell>
-                    <TableCell>
-                      <Badge className={getStatusColor(report.status)}>
-                        {report.status}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge className={getPriorityColor(report.priority)}>
-                        {report.priority}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{report.department}</TableCell>
-                    <TableCell>{report.created_by_name}</TableCell>
-                    <TableCell>
-                      {new Date(report.created_at).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex gap-2">
-                        {canEditReport(report) && (
-                          <>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => {/* Implementar edición */}}
-                            >
-                              <Edit className="h-4 w-4" />
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleDelete(report.id)}
-                            >
-                              <Trash2 className="h-4 w-4" />
-                            </Button>
-                          </>
-                        )}
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+          <ReportTable
+            reports={filteredReports || []}
+            onDelete={handleDelete}
+            onEdit={handleEdit}
+            canEditReport={canEditReport}
+          />
         )}
       </Card>
     </div>
