@@ -9,11 +9,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { toast } from "sonner";
 
 const formSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
   email: z.string().email("Email inválido"),
-  role: z.enum(["Usuario", "Logístico", "Informático"], {
+  role: z.enum(["Usuario", "Logístico", "Informático", "Administrador"], {
     required_error: "Por favor seleccione un rol",
   }),
 });
@@ -38,6 +39,7 @@ const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
       ...user,
       ...values,
     });
+    toast.success("Usuario actualizado correctamente");
   }
 
   return (
@@ -96,6 +98,7 @@ const EditUserDialog = ({ user, onUserUpdated }: EditUserDialogProps) => {
                       <SelectItem value="Usuario">Usuario</SelectItem>
                       <SelectItem value="Logístico">Logístico</SelectItem>
                       <SelectItem value="Informático">Informático</SelectItem>
+                      <SelectItem value="Administrador">Administrador</SelectItem>
                     </SelectContent>
                   </Select>
                   <FormMessage />
