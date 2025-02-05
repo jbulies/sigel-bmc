@@ -21,7 +21,7 @@ import { Edit, Trash2 } from "lucide-react";
 const Reports = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState("all");
   const [status, setStatus] = useState("all");
   const [department, setDepartment] = useState("all");
 
