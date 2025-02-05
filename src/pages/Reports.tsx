@@ -12,15 +12,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Edit, Trash2, FileDown } from "lucide-react";
 import { isWithinInterval, parseISO } from "date-fns";
 import { jsPDF } from "jspdf";
-import 'jspdf-autotable';
-import type { TableConfig } from "jspdf-autotable";
-
-// Extend jsPDF with autoTable
-declare module 'jspdf' {
-  interface jsPDF {
-    autoTable: (options: TableConfig) => jsPDF;
-  }
-}
+import autoTable from 'jspdf-autotable';
 
 const Reports = () => {
   const { user } = useAuth();
@@ -43,20 +35,6 @@ const Reports = () => {
       return response.json() as Promise<Report[]>;
     },
   });
-
-  const getDateRange = () => {
-    const now = new Date();
-    switch (dateRange) {
-      case "week":
-        return { start: startOfWeek(now), end: endOfWeek(now) };
-      case "month":
-        return { start: startOfMonth(now), end: endOfMonth(now) };
-      case "year":
-        return { start: startOfYear(now), end: endOfYear(now) };
-      default:
-        return null;
-    }
-  };
 
   const filteredReports = reports?.filter((report) => {
     const matchesSearch = 
@@ -120,9 +98,9 @@ const Reports = () => {
       new Date(report.created_at).toLocaleDateString(),
     ]);
 
-    doc.autoTable({
-      head: [tableColumn],
-      body: tableRows,
+    autoTable(doc, {
+      columns: tableColumn.map(title => ({ header: title })),
+      body: tableRows
     });
 
     doc.save("reportes.pdf");
