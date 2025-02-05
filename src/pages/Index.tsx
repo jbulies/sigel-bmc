@@ -3,6 +3,7 @@ import { Card } from "@/components/ui/card";
 import { useNavigate } from "react-router-dom";
 
 const Index = () => {
+  console.log("Index component rendered"); // Agregamos log para debugging
   const navigate = useNavigate();
 
   return (

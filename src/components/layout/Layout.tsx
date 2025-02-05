@@ -7,6 +7,8 @@ interface LayoutProps {
 }
 
 const Layout = ({ children }: LayoutProps) => {
+  console.log("Layout component rendered"); // Agregamos log para debugging
+  
   return (
     <div className="min-h-screen bg-background">
       <Sidebar />
