@@ -14,31 +14,34 @@ import {
 import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 
 const profileSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  email: z.string().email("Email inválido"),
-  currentPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres"),
+  currentPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
   newPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
   confirmPassword: z.string().optional(),
 }).refine((data) => {
+  if (data.newPassword && !data.currentPassword) {
+    return false;
+  }
   if (data.newPassword && data.newPassword !== data.confirmPassword) {
     return false;
   }
   return true;
 }, {
-  message: "Las contraseñas no coinciden",
+  message: "Las contraseñas no coinciden o falta la contraseña actual",
   path: ["confirmPassword"],
 });
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
+  const { user } = useAuth();
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      name: "",
-      email: "",
+      name: user?.name || "",
       currentPassword: "",
       newPassword: "",
       confirmPassword: "",
@@ -48,11 +51,30 @@ const Profile = () => {
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     setIsLoading(true);
     try {
-      // TODO: Implementar actualización de perfil
-      console.log(values);
-      toast.success("Perfil actualizado correctamente");
+      const response = await fetch('http://localhost:3000/api/users/profile', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(values),
+      });
+
+      const data = await response.json();
+
+      if (response.ok) {
+        toast.success("Perfil actualizado correctamente");
+        form.reset({
+          name: values.name,
+          currentPassword: "",
+          newPassword: "",
+          confirmPassword: "",
+        });
+      } else {
+        toast.error(data.message || "Error al actualizar el perfil");
+      }
     } catch (error) {
-      toast.error("Error al actualizar el perfil");
+      toast.error("Error al conectar con el servidor");
     } finally {
       setIsLoading(false);
     }
@@ -75,19 +97,6 @@ const Profile = () => {
                     <FormLabel>Nombre</FormLabel>
                     <FormControl>
                       <Input {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name="email"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Email</FormLabel>
-                    <FormControl>
-                      <Input {...field} disabled />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
