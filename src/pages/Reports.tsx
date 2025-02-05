@@ -100,25 +100,25 @@ const Reports = () => {
     // Configurar estilos para la tabla
     const styles = {
       font: 'helvetica',
-      fontStyle: 'normal',
-      fontSize: 10,
+      fontStyle: 'normal' as const, // Especificamos que es una constante literal
+      fontSize: 10
     };
 
     const getStatusStyle = (status: string) => {
       switch (status) {
-        case 'Pendiente': return { textColor: [255, 140, 0] }; // Naranja
-        case 'En Progreso': return { textColor: [0, 0, 255] }; // Azul
-        case 'Resuelto': return { textColor: [0, 128, 0] }; // Verde
-        default: return { textColor: [0, 0, 0] }; // Negro
+        case 'Pendiente': return { textColor: [255, 140, 0] as [number, number, number] };
+        case 'En Progreso': return { textColor: [0, 0, 255] as [number, number, number] };
+        case 'Resuelto': return { textColor: [0, 128, 0] as [number, number, number] };
+        default: return { textColor: [0, 0, 0] as [number, number, number] };
       }
     };
 
     const getPriorityStyle = (priority: string) => {
       switch (priority) {
-        case 'Alta': return { textColor: [255, 0, 0] }; // Rojo
-        case 'Media': return { textColor: [255, 140, 0] }; // Naranja
-        case 'Baja': return { textColor: [0, 128, 0] }; // Verde
-        default: return { textColor: [0, 0, 0] }; // Negro
+        case 'Alta': return { textColor: [255, 0, 0] as [number, number, number] };
+        case 'Media': return { textColor: [255, 140, 0] as [number, number, number] };
+        case 'Baja': return { textColor: [0, 128, 0] as [number, number, number] };
+        default: return { textColor: [0, 0, 0] as [number, number, number] };
       }
     };
 
@@ -133,7 +133,7 @@ const Reports = () => {
     ];
 
     const tableRows = filteredReports.map((report) => [
-      report.id,
+      report.id.toString(),
       report.title,
       report.status,
       report.priority,
@@ -148,16 +148,16 @@ const Reports = () => {
       body: tableRows,
       styles,
       columnStyles: {
-        0: { cellWidth: 20 }, // ID
-        1: { cellWidth: 40 }, // Título
-        2: { cellWidth: 25 }, // Estado
-        3: { cellWidth: 25 }, // Prioridad
-        4: { cellWidth: 30 }, // Departamento
-        5: { cellWidth: 30 }, // Creado por
-        6: { cellWidth: 25 }, // Fecha
+        0: { cellWidth: 20 },
+        1: { cellWidth: 40 },
+        2: { cellWidth: 25 },
+        3: { cellWidth: 25 },
+        4: { cellWidth: 30 },
+        5: { cellWidth: 30 },
+        6: { cellWidth: 25 },
       },
       didDrawCell: (data) => {
-        if (data.section === 'body') {
+        if (data.section === 'body' && data.row.index !== undefined) {
           const status = tableRows[data.row.index][2];
           const priority = tableRows[data.row.index][3];
           
