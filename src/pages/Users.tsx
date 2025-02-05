@@ -57,13 +57,6 @@ const Users = () => {
     toast.success("Usuario desactivado correctamente");
   };
 
-  const handlePromoteToAdmin = (user: User) => {
-    setUsers(users.map(u => 
-      u.id === user.id ? { ...u, role: "Administrador" } : u
-    ));
-    toast.success(`${user.name} ahora es administrador`);
-  };
-
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -95,7 +88,6 @@ const Users = () => {
             users={filteredUsers}
             onEditUser={handleEditUser}
             onDeactivateUser={handleDeactivateUser}
-            onPromoteToAdmin={handlePromoteToAdmin}
           />
         </div>
       </Card>

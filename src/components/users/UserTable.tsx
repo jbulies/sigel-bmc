@@ -1,4 +1,4 @@
-import { MoreHorizontal, UserX, Edit2, UserPlus } from "lucide-react";
+import { MoreHorizontal, UserX } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
   Table,
@@ -21,14 +21,12 @@ interface UserTableProps {
   users: User[];
   onEditUser: (user: User) => void;
   onDeactivateUser: (user: User) => void;
-  onPromoteToAdmin: (user: User) => void;
 }
 
 const UserTable = ({ 
   users, 
   onEditUser, 
   onDeactivateUser,
-  onPromoteToAdmin 
 }: UserTableProps) => {
   return (
     <Table>
@@ -65,14 +63,8 @@ const UserTable = ({
                     <MoreHorizontal className="h-4 w-4" />
                   </Button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
+                <DropdownMenuContent align="end" className="bg-white">
                   <EditUserDialog user={user} onUserUpdated={onEditUser} />
-                  {user.role !== "Administrador" && (
-                    <DropdownMenuItem onClick={() => onPromoteToAdmin(user)}>
-                      <UserPlus className="mr-2 h-4 w-4" />
-                      Hacer administrador
-                    </DropdownMenuItem>
-                  )}
                   <DropdownMenuItem 
                     className="text-destructive"
                     onClick={() => onDeactivateUser(user)}
