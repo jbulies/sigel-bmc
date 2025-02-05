@@ -1,7 +1,8 @@
+import { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
-import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { CreateReportDialog } from "@/components/reports/CreateReportDialog";
+import { ReportFilters } from "@/components/reports/ReportFilters";
 import {
   Table,
   TableBody,
@@ -12,16 +13,65 @@ import {
 } from "@/components/ui/table";
 import { Report } from "@/types/report";
 import { Badge } from "@/components/ui/badge";
+import { useAuth } from "@/contexts/AuthContext";
+import { Button } from "@/components/ui/button";
+import { useToast } from "@/components/ui/use-toast";
+import { Edit, Trash2 } from "lucide-react";
 
 const Reports = () => {
-  const { data: reports, isLoading } = useQuery({
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [search, setSearch] = useState("");
+  const [status, setStatus] = useState("");
+  const [department, setDepartment] = useState("");
+
+  const { data: reports, isLoading, refetch } = useQuery({
     queryKey: ["reports"],
     queryFn: async () => {
-      const response = await fetch("/api/reports");
+      const response = await fetch("/api/reports", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
       if (!response.ok) throw new Error("Error al cargar los reportes");
       return response.json() as Promise<Report[]>;
     },
   });
+
+  const filteredReports = reports?.filter((report) => {
+    const matchesSearch = report.title
+      .toLowerCase()
+      .includes(search.toLowerCase());
+    const matchesStatus = status ? report.status === status : true;
+    const matchesDepartment = department ? report.department === department : true;
+    return matchesSearch && matchesStatus && matchesDepartment;
+  });
+
+  const handleDelete = async (id: number) => {
+    try {
+      const response = await fetch(`/api/reports/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al eliminar el reporte");
+
+      toast({
+        title: "Reporte eliminado",
+        description: "El reporte ha sido eliminado exitosamente",
+      });
+
+      refetch();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "No se pudo eliminar el reporte",
+        variant: "destructive",
+      });
+    }
+  };
 
   const getStatusColor = (status: Report["status"]) => {
     switch (status) {
@@ -49,6 +99,13 @@ const Reports = () => {
     }
   };
 
+  const canEditReport = (report: Report) => {
+    if (user?.role === "Administrador") return true;
+    if (user?.role === "Logístico" && report.department === "Logística") return true;
+    if (user?.role === "Informático" && report.department === "Informática") return true;
+    return false;
+  };
+
   return (
     <div className="space-y-8 animate-fade-in">
       <div className="flex items-center justify-between">
@@ -62,6 +119,15 @@ const Reports = () => {
       </div>
 
       <Card className="p-6">
+        <ReportFilters
+          search={search}
+          setSearch={setSearch}
+          status={status}
+          setStatus={setStatus}
+          department={department}
+          setDepartment={setDepartment}
+        />
+
         {isLoading ? (
           <div>Cargando reportes...</div>
         ) : (
@@ -72,12 +138,14 @@ const Reports = () => {
                 <TableHead>Título</TableHead>
                 <TableHead>Estado</TableHead>
                 <TableHead>Prioridad</TableHead>
-                <TableHead>Creado</TableHead>
+                <TableHead>Departamento</TableHead>
+                <TableHead>Creado por</TableHead>
+                <TableHead>Fecha</TableHead>
                 <TableHead>Acciones</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {reports?.map((report) => (
+              {filteredReports?.map((report) => (
                 <TableRow key={report.id}>
                   <TableCell>{report.id}</TableCell>
                   <TableCell>{report.title}</TableCell>
@@ -91,13 +159,32 @@ const Reports = () => {
                       {report.priority}
                     </Badge>
                   </TableCell>
+                  <TableCell>{report.department}</TableCell>
+                  <TableCell>{report.created_by_name}</TableCell>
                   <TableCell>
                     {new Date(report.created_at).toLocaleDateString()}
                   </TableCell>
                   <TableCell>
-                    <Button variant="outline" size="sm">
-                      Ver detalles
-                    </Button>
+                    <div className="flex gap-2">
+                      {canEditReport(report) && (
+                        <>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => {/* Implementar edición */}}
+                          >
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="icon"
+                            onClick={() => handleDelete(report.id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
                   </TableCell>
                 </TableRow>
               ))}
