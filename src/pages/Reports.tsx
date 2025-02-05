@@ -10,25 +10,26 @@ import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Edit, Trash2, FileDown } from "lucide-react";
-import { startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, isWithinInterval } from "date-fns";
+import { isWithinInterval, parseISO } from "date-fns";
 import { jsPDF } from "jspdf";
 import 'jspdf-autotable';
-import { UserConfig } from 'jspdf-autotable';
+import type { TableConfig } from "jspdf-autotable";
 
 // Extend jsPDF with autoTable
 declare module 'jspdf' {
   interface jsPDF {
-    autoTable: (options: UserConfig) => jsPDF;
+    autoTable: (options: TableConfig) => jsPDF;
   }
 }
 
 const Reports = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const [search, setSearch] = useState("all");
+  const [search, setSearch] = useState("");
   const [status, setStatus] = useState("all");
   const [department, setDepartment] = useState("all");
-  const [dateRange, setDateRange] = useState("all");
+  const [dateFrom, setDateFrom] = useState<Date>();
+  const [dateTo, setDateTo] = useState<Date>();
 
   const { data: reports, isLoading, refetch } = useQuery({
     queryKey: ["reports"],
@@ -58,15 +59,21 @@ const Reports = () => {
   };
 
   const filteredReports = reports?.filter((report) => {
-    const matchesSearch = search === "all" || report.title.toLowerCase().includes(search.toLowerCase());
+    const matchesSearch = 
+      search === "" || 
+      report.title.toLowerCase().includes(search.toLowerCase());
     const matchesStatus = status === "all" || report.status === status;
-    const matchesDepartment = department === "all" || report.department === department;
+    const matchesDepartment = 
+      department === "all" || 
+      report.department === department;
     
     let matchesDate = true;
-    const range = getDateRange();
-    if (range) {
-      const reportDate = new Date(report.created_at);
-      matchesDate = isWithinInterval(reportDate, range);
+    if (dateFrom && dateTo) {
+      const reportDate = parseISO(report.created_at);
+      matchesDate = isWithinInterval(reportDate, { 
+        start: dateFrom, 
+        end: dateTo 
+      });
     }
 
     return matchesSearch && matchesStatus && matchesDepartment && matchesDate;
@@ -180,8 +187,10 @@ const Reports = () => {
           setStatus={setStatus}
           department={department}
           setDepartment={setDepartment}
-          dateRange={dateRange}
-          setDateRange={setDateRange}
+          dateFrom={dateFrom}
+          setDateFrom={setDateFrom}
+          dateTo={dateTo}
+          setDateTo={setDateTo}
         />
 
         {isLoading ? (
