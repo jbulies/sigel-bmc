@@ -11,7 +11,7 @@ const app = express();
 
 // Middlewares
 app.use(cors({
-  origin: process.env.FRONTEND_URL || '*',
+  origin: '*', // Temporalmente permitimos todos los orígenes para debugging
   credentials: true
 }));
 app.use(express.json());
@@ -37,7 +37,7 @@ app.use((err: any, req: express.Request, res: express.Response, next: express.Ne
 
 const PORT = process.env.PORT || 3001;
 
-const server = app.listen(PORT, () => {
+app.listen(PORT, () => {
   console.log(`Server running on port ${PORT}`);
   console.log('Environment:', process.env.NODE_ENV);
   console.log('Database host:', process.env.DB_HOST);
@@ -46,8 +46,5 @@ const server = app.listen(PORT, () => {
 // Graceful shutdown
 process.on('SIGTERM', () => {
   console.log('SIGTERM received. Shutting down gracefully...');
-  server.close(() => {
-    console.log('Server closed');
-    process.exit(0);
-  });
+  process.exit(0);
 });
