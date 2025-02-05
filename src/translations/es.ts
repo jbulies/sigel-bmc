@@ -18,6 +18,12 @@ export const translations = {
     actions: "Acciones",
     all: "Todos",
   },
+  menu: {
+    dashboard: "Panel Principal",
+    reports: "Reportes",
+    users: "Usuarios",
+    settings: "Configuración",
+  },
   dashboard: {
     title: "Panel de Control",
     subtitle: "Vista general del sistema de gestión de reportes",
@@ -69,6 +75,11 @@ export const translations = {
     myProfile: "Mi Perfil",
     settings: "Configuración",
     logout: "Cerrar Sesión",
+    role: {
+      administrator: "Administrador",
+      user: "Usuario",
+      manager: "Gerente"
+    }
   },
   notifications: {
     title: "Notificaciones",

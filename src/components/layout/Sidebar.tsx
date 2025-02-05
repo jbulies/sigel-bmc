@@ -9,16 +9,18 @@ import {
   Menu,
   X
 } from "lucide-react";
+import { translations } from "@/translations/es";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
+  const { menu, profile } = translations;
 
   const menuItems = [
-    { icon: LayoutDashboard, label: "Dashboard", path: "/" },
-    { icon: FileText, label: "Reports", path: "/reports" },
-    { icon: Users, label: "Users", path: "/users" },
-    { icon: Settings, label: "Settings", path: "/settings" },
+    { icon: LayoutDashboard, label: menu.dashboard, path: "/" },
+    { icon: FileText, label: menu.reports, path: "/reports" },
+    { icon: Users, label: menu.users, path: "/users" },
+    { icon: Settings, label: menu.settings, path: "/settings" },
   ];
 
   const toggleSidebar = () => setIsOpen(!isOpen);
@@ -68,8 +70,8 @@ const Sidebar = () => {
             <div className="flex items-center gap-3 px-4 py-2">
               <div className="w-8 h-8 rounded-full bg-primary" />
               <div>
-                <p className="text-sm font-medium">John Doe</p>
-                <p className="text-xs text-muted-foreground">Administrator</p>
+                <p className="text-sm font-medium">Juan Pérez</p>
+                <p className="text-xs text-muted-foreground">{profile.role.administrator}</p>
               </div>
             </div>
           </div>
