@@ -1,4 +1,5 @@
 import { Bell } from "lucide-react";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 const Header = () => {
   return (
@@ -7,10 +8,7 @@ const Header = () => {
         <h2 className="text-lg font-medium">Welcome to SIGEL</h2>
         
         <div className="flex items-center gap-4">
-          <button className="relative p-2 rounded-full hover:bg-accent transition-colors">
-            <Bell size={20} />
-            <span className="absolute top-1 right-1 w-2 h-2 bg-status-pending rounded-full" />
-          </button>
+          <NotificationDropdown />
         </div>
       </div>
     </header>
