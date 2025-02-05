@@ -7,12 +7,14 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/components/ui/use-toast";
 import { CreateReportDTO } from "@/types/report";
+import { useAuth } from "@/contexts/AuthContext";
 
 export function CreateReportDialog() {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const { user } = useAuth();
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -23,12 +25,16 @@ export function CreateReportDialog() {
       title: formData.get("title") as string,
       description: formData.get("description") as string,
       priority: formData.get("priority") as CreateReportDTO["priority"],
+      department: formData.get("department") as CreateReportDTO["department"],
     };
 
     try {
       const response = await fetch("/api/reports", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem('token')}`
+        },
         body: JSON.stringify(data),
       });
 
@@ -51,6 +57,11 @@ export function CreateReportDialog() {
       setIsLoading(false);
     }
   };
+
+  // Solo mostrar el botón si el usuario tiene rol de Usuario
+  if (user?.role !== 'Usuario') {
+    return null;
+  }
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -75,6 +86,17 @@ export function CreateReportDialog() {
               placeholder="Descripción detallada"
               required
             />
+          </div>
+          <div>
+            <Select name="department" required>
+              <SelectTrigger>
+                <SelectValue placeholder="Selecciona el departamento" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="Logística">Logística</SelectItem>
+                <SelectItem value="Informática">Informática</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div>
             <Select name="priority" required>

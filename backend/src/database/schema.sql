@@ -40,6 +40,7 @@ CREATE TABLE reports (
   description TEXT NOT NULL,
   status ENUM('Pendiente', 'En Progreso', 'Resuelto') DEFAULT 'Pendiente',
   priority ENUM('Baja', 'Media', 'Alta') NOT NULL,
+  department ENUM('Logística', 'Informática') NOT NULL,
   created_by INT NOT NULL,
   assigned_to INT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
