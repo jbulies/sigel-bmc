@@ -18,13 +18,18 @@ app.use('/api/auth', authRoutes);
 app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/reports', authenticateToken, reportRoutes);
 
+// Configuración para servir archivos estáticos
+const distPath = path.join(__dirname, '../../dist');
+console.log('Ruta del dist:', distPath);
+
 // Servir archivos estáticos desde el directorio dist
-const distPath = path.join(__dirname, '../../../../sigel-bmc/dist');
 app.use(express.static(distPath));
 
 // Todas las rutas no manejadas serán redirigidas al index.html
 app.get('*', (req, res) => {
-  res.sendFile(path.join(distPath, 'index.html'));
+  const indexPath = path.join(distPath, 'index.html');
+  console.log('Intentando servir:', indexPath);
+  res.sendFile(indexPath);
 });
 
 // Iniciar servidor
