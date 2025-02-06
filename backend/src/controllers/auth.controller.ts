@@ -145,11 +145,11 @@ export const resetPassword = async (req: Request, res: Response) => {
 
 export const register = async (req: Request, res: Response) => {
   try {
-    const { name, email, password, token } = req.body;
+    const { name, email, password, invitationToken } = req.body;
 
     const [invitations]: any = await pool.query(
       'SELECT * FROM invitations WHERE token = ? AND status = "Pendiente" AND expires_at > NOW()',
-      [token]
+      [invitationToken]
     );
 
     if (!invitations.length) {
@@ -176,7 +176,7 @@ export const register = async (req: Request, res: Response) => {
 
     await pool.query('COMMIT');
 
-    const token = jwt.sign(
+    const authToken = jwt.sign(
       { id: result.insertId, role: invitation.role },
       JWT_SECRET,
       { expiresIn: '24h' }
@@ -185,7 +185,7 @@ export const register = async (req: Request, res: Response) => {
     res.status(201).json({
       success: true,
       message: 'Registro exitoso',
-      token,
+      token: authToken,
       user: {
         id: result.insertId,
         name,

@@ -1,7 +1,7 @@
 import express from 'express';
 import path from 'path';
 import cors from 'cors';
-import authRoutes from './routes/auth';
+import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/users';
 import reportRoutes from './routes/reports';
 import { authenticateToken } from './middleware/auth';
