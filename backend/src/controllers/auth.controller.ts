@@ -61,6 +61,7 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
+    console.log('Intento de inicio de sesión:', req.body);
     const { email, password } = req.body;
 
     const [users]: any = await pool.query(
@@ -68,14 +69,21 @@ export const login = async (req: Request, res: Response) => {
       [email]
     );
 
+    console.log('Usuarios encontrados:', users.length);
+
     if (!users.length) {
+      console.log('No se encontró el usuario');
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
     const user = users[0];
+    console.log('Usuario encontrado:', { id: user.id, email: user.email, role: user.role });
 
     const isValidPassword = await bcrypt.compare(password, user.password);
+    console.log('Contraseña válida:', isValidPassword);
+    
     if (!isValidPassword) {
+      console.log('Contraseña incorrecta');
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
@@ -84,6 +92,8 @@ export const login = async (req: Request, res: Response) => {
       JWT_SECRET,
       jwtSignOptions
     );
+
+    console.log('Token generado exitosamente');
 
     res.json({
       message: 'Inicio de sesión exitoso',
