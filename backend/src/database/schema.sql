@@ -23,6 +23,33 @@ CREATE TABLE IF NOT EXISTS invitations (
   expires_at DATETIME NOT NULL
 );
 
+-- Crear tabla de reportes
+CREATE TABLE IF NOT EXISTS reports (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  status ENUM('Pendiente', 'En Progreso', 'Resuelto') DEFAULT 'Pendiente',
+  priority ENUM('Baja', 'Media', 'Alta') NOT NULL,
+  department ENUM('Logística', 'Informática') NOT NULL,
+  created_by INT NOT NULL,
+  assigned_to INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (assigned_to) REFERENCES users(id)
+);
+
+-- Crear tabla de notificaciones
+CREATE TABLE IF NOT EXISTS notifications (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  is_read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id)
+);
+
 -- Insertar usuario administrador por defecto con contraseña: Admin123*
 -- El hash fue generado usando el salt fijo
 INSERT INTO users (name, email, password, role) VALUES (

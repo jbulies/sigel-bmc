@@ -134,7 +134,8 @@ export const resetPassword = async (req: Request, res: Response) => {
       });
     }
 
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    // Usar el salt fijo para el reset de contraseña
+    const hashedPassword = bcrypt.hashSync(password, SALT);
 
     await pool.query(
       'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
