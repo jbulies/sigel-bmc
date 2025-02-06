@@ -34,14 +34,9 @@ export const login = async (req: Request, res: Response) => {
 
     const user = users[0];
     
-    // Usar el salt fijo para generar el hash
-    const hashedPassword = bcrypt.hashSync(password, SALT);
-    console.log('Generated hash:', hashedPassword);
-    console.log('Stored hash:', user.password);
-    
-    // Comparación directa de hashes
-    const isValid = hashedPassword === user.password;
-    console.log('Password valid:', isValid);
+    // Usar bcrypt.compare en lugar de comparación directa de hashes
+    const isValid = await bcrypt.compare(password, user.password);
+    console.log('Password comparison result:', isValid);
 
     if (!isValid) {
       return res.status(401).json({
@@ -134,8 +129,8 @@ export const resetPassword = async (req: Request, res: Response) => {
       });
     }
 
-    // Usar el salt fijo para el reset de contraseña
-    const hashedPassword = bcrypt.hashSync(password, SALT);
+    // Generar el hash de la nueva contraseña usando bcrypt
+    const hashedPassword = await bcrypt.hash(password, SALT);
 
     await pool.query(
       'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
@@ -173,8 +168,8 @@ export const register = async (req: Request, res: Response) => {
 
     const invitation = invitations[0];
     
-    // Usar el salt fijo para el registro
-    const hashedPassword = bcrypt.hashSync(password, SALT);
+    // Generar el hash de la contraseña usando bcrypt
+    const hashedPassword = await bcrypt.hash(password, SALT);
 
     await pool.query('BEGIN');
 
