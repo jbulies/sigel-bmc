@@ -62,14 +62,17 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    console.log('Attempting login for:', email);
+    console.log('Login attempt details:', {
+      email,
+      passwordProvided: !!password,
+      passwordType: typeof password,
+      passwordLength: password?.length
+    });
 
-    // Validación básica
     if (!email || !password) {
       return res.status(400).json({ message: 'Email y contraseña son requeridos' });
     }
 
-    // Buscar usuario
     const [users]: any = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
@@ -80,25 +83,36 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const user = users[0];
-    console.log('Found user:', { email: user.email, status: user.status });
+    console.log('User found:', {
+      email: user.email,
+      status: user.status,
+      hashLength: user.password.length
+    });
 
     if (user.status !== 'Activo') {
       return res.status(401).json({ message: 'Cuenta de usuario inactiva' });
     }
 
-    // Comparar contraseña
+    // Generar un hash de prueba para comparar
+    const testHash = await bcrypt.hash('admin123', 10);
+    console.log('Hash comparison:', {
+      providedPassword: password,
+      storedHash: user.password,
+      testHash,
+      hashesMatch: user.password === testHash
+    });
+
     const isValid = await bcrypt.compare(password, user.password);
-    console.log('Password validation:', { 
+    console.log('Password validation result:', {
       isValid,
-      passwordLength: password.length,
-      hashLength: user.password.length
+      passwordUsed: password,
+      hashUsed: user.password
     });
 
     if (!isValid) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    // Generar token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       JWT_SECRET,
