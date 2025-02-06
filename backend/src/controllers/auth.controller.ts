@@ -5,11 +5,13 @@ import pool from '../config/database';
 import { sendInvitationEmail, sendPasswordResetEmail } from '../services/email.service';
 import crypto from 'crypto';
 
+const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
+const JWT_EXPIRES_IN = '24h';
+
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password, token } = req.body;
 
-    // Verificar si el token de invitación es válido
     const [invitations]: any = await pool.query(
       'SELECT * FROM invitations WHERE token = ? AND status = "Pendiente" AND expires_at > NOW()',
       [token]
@@ -21,31 +23,26 @@ export const register = async (req: Request, res: Response) => {
 
     const invitation = invitations[0];
 
-    // Verificar si el email coincide con la invitación
     if (email !== invitation.email) {
       return res.status(400).json({ message: 'El email no coincide con la invitación' });
     }
 
-    // Hashear la contraseña
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // Crear el usuario
     const [result]: any = await pool.query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
       [name, email, hashedPassword, invitation.role]
     );
 
-    // Actualizar el estado de la invitación
     await pool.query(
       'UPDATE invitations SET status = "Aceptada" WHERE id = ?',
       [invitation.id]
     );
 
-    // Generar token JWT
     const token_jwt = jwt.sign(
       { id: result.insertId, role: invitation.role },
-      process.env.JWT_SECRET!,
-      { expiresIn: process.env.JWT_EXPIRES_IN }
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.status(201).json({

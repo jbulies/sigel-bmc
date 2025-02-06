@@ -7,7 +7,7 @@ import reportRoutes from './routes/reports';
 import { authenticateToken } from './middleware/auth';
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT ? parseInt(process.env.PORT) : 8080;
 
 // Middleware básico
 app.use(cors());
