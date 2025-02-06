@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import { pool } from '../config/database';
+import pool from '../config/database';
 
 export const getReports = async (req: Request, res: Response) => {
   try {
