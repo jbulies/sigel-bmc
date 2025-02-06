@@ -108,8 +108,13 @@ export const login = async (req: Request, res: Response) => {
     // Agregar más logs para debug
     console.log('About to compare password:', {
       plaintext: trimmedPassword,
-      hash: user.password
+      hash: user.password,
+      saltRounds: 10
     });
+
+    // Generar un nuevo hash para comparar
+    const testHash = await bcrypt.hash(trimmedPassword, 10);
+    console.log('Test hash generated:', testHash);
     
     const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
     console.log('Password validation result:', isValidPassword);
