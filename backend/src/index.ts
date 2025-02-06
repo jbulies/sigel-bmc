@@ -19,7 +19,7 @@ app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/reports', authenticateToken, reportRoutes);
 
 // Servir archivos estáticos desde el directorio dist
-const distPath = path.join(__dirname, '../../dist');
+const distPath = path.join(__dirname, '../../../dist');
 app.use(express.static(distPath));
 
 // Todas las rutas no manejadas serán redirigidas al index.html
