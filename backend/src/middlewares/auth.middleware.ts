@@ -19,19 +19,18 @@ export const authMiddleware = async (req: Request, res: Response, next: NextFunc
   try {
     const authHeader = req.headers.authorization;
     if (!authHeader) {
-      return res.status(401).json({ message: 'No se proporcionó token de autenticación' });
+      return res.status(401).json({ message: 'Token no proporcionado' });
     }
 
     const token = authHeader.split(' ')[1];
     const decoded = jwt.verify(token, process.env.JWT_SECRET!) as JwtPayload;
 
-    // Verificar si el usuario existe y está activo
     const [users]: any = await pool.query(
-      'SELECT id, role, status FROM users WHERE id = ?',
+      'SELECT id, role, status FROM users WHERE id = ? AND status = "Activo"',
       [decoded.id]
     );
 
-    if (!users.length || users[0].status !== 'Activo') {
+    if (!users.length) {
       return res.status(401).json({ message: 'Usuario no autorizado' });
     }
 
