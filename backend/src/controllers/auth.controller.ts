@@ -62,12 +62,11 @@ export const register = async (req: Request, res: Response) => {
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
-    console.log('Starting login process for:', email);
+    console.log('Attempting login for:', email);
 
-    // Verificación básica de la contraseña
-    if (!password || typeof password !== 'string') {
-      console.log('Invalid password format:', password);
-      return res.status(400).json({ message: 'Formato de contraseña inválido' });
+    // Validación básica
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email y contraseña son requeridos' });
     }
 
     // Buscar usuario
@@ -77,43 +76,36 @@ export const login = async (req: Request, res: Response) => {
     );
 
     if (!users.length) {
-      console.log('No user found with email:', email);
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
     const user = users[0];
-    
-    // Verificar estado del usuario
+    console.log('Found user:', { email: user.email, status: user.status });
+
     if (user.status !== 'Activo') {
-      console.log('User account is not active');
       return res.status(401).json({ message: 'Cuenta de usuario inactiva' });
     }
 
-    // Limpiar contraseña y preparar para comparación
-    const cleanPassword = password.trim();
-    
-    console.log('Password comparison preparation:', {
-      inputPassword: cleanPassword,
-      storedHash: user.password
+    // Comparar contraseña
+    const isValid = await bcrypt.compare(password, user.password);
+    console.log('Password validation:', { 
+      isValid,
+      passwordLength: password.length,
+      hashLength: user.password.length
     });
 
-    // Intentar comparación directa
-    const isValid = await bcrypt.compare(cleanPassword, user.password);
-    console.log('Password validation result:', isValid);
-
     if (!isValid) {
-      console.log('Invalid password for user:', email);
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    // Generar token JWT
+    // Generar token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       JWT_SECRET,
       jwtSignOptions
     );
 
-    console.log('Login successful for user:', email);
+    console.log('Login successful for:', email);
 
     res.json({
       message: 'Inicio de sesión exitoso',
@@ -126,7 +118,7 @@ export const login = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Error in login process:', error);
+    console.error('Login error:', error);
     res.status(500).json({ message: 'Error al iniciar sesión' });
   }
 };
