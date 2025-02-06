@@ -2,10 +2,9 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import { AuthProvider } from "./contexts/AuthContext";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { AuthProvider, useAuth } from "./contexts/AuthContext";
 import Layout from "./components/layout/Layout";
-import Index from "./pages/Index";
 import Dashboard from "./pages/Dashboard";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
@@ -16,8 +15,37 @@ import Login from "./pages/auth/Login";
 
 const queryClient = new QueryClient();
 
+// Componente de redirección basado en autenticación
+const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+  
+  if (!user) {
+    return <Navigate to="/auth/login" replace />;
+  }
+
+  return <>{children}</>;
+};
+
+const PublicRoute = ({ children }: { children: React.ReactNode }) => {
+  const { user, isLoading } = useAuth();
+  
+  if (isLoading) {
+    return <div>Cargando...</div>;
+  }
+  
+  if (user) {
+    return <Navigate to="/dashboard" replace />;
+  }
+
+  return <>{children}</>;
+};
+
 const App = () => {
-  console.log("App component rendered"); // Agregamos log para debugging
+  console.log("App component rendered");
 
   return (
     <QueryClientProvider client={queryClient}>
@@ -27,13 +55,75 @@ const App = () => {
             <Toaster />
             <Sonner />
             <Routes>
-              <Route path="/auth/login" element={<Login />} />
-              <Route path="/" element={<Layout><Index /></Layout>} />
-              <Route path="/dashboard" element={<Layout><Dashboard /></Layout>} />
-              <Route path="/reports" element={<Layout><Reports /></Layout>} />
-              <Route path="/users" element={<Layout><Users /></Layout>} />
-              <Route path="/settings" element={<Layout><Settings /></Layout>} />
-              <Route path="/profile" element={<Layout><Profile /></Layout>} />
+              {/* Ruta raíz redirige según autenticación */}
+              <Route 
+                path="/" 
+                element={
+                  <Navigate to="/dashboard" replace />
+                } 
+              />
+              
+              {/* Rutas públicas */}
+              <Route 
+                path="/auth/login" 
+                element={
+                  <PublicRoute>
+                    <Login />
+                  </PublicRoute>
+                } 
+              />
+
+              {/* Rutas protegidas */}
+              <Route
+                path="/dashboard"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Dashboard />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/reports"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Reports />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/users"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Users />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/settings"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Settings />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
+              <Route
+                path="/profile"
+                element={
+                  <PrivateRoute>
+                    <Layout>
+                      <Profile />
+                    </Layout>
+                  </PrivateRoute>
+                }
+              />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </AuthProvider>

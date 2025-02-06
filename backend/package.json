@@ -2,10 +2,10 @@
   "name": "backend",
   "version": "1.0.0",
   "description": "Backend para la aplicación",
-  "main": "src/index.ts",
+  "main": "dist/index.js",
   "scripts": {
     "dev": "ts-node-dev --respawn --transpile-only src/index.ts",
-    "build": "npx tsc",
+    "build": "tsc",
     "start": "node dist/index.js"
   },
   "dependencies": {
