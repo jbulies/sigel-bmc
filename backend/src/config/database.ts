@@ -13,35 +13,23 @@ const pool = mysql.createPool({
   queueLimit: 0,
   enableKeepAlive: true,
   keepAliveInitialDelay: 0,
-  multipleStatements: true // Permitir múltiples statements para las transacciones
+  multipleStatements: true
 });
 
-// Verificar conexión y crear tablas si no existen
+// Solo verificar la conexión sin crear tablas
 const initializeDatabase = async () => {
   try {
     const connection = await pool.getConnection();
     console.log('Database connection established successfully');
     console.log('Connected as id:', connection.threadId);
-
-    // Leer y ejecutar el archivo schema.sql
-    const fs = require('fs');
-    const path = require('path');
-    const schema = fs.readFileSync(
-      path.join(__dirname, '../database/schema.sql'),
-      'utf8'
-    );
-
-    await connection.query(schema);
-    console.log('Database schema initialized successfully');
-    
     connection.release();
   } catch (err) {
-    console.error('Error initializing database:', err);
-    process.exit(1); // Terminar la aplicación si no se puede conectar a la base de datos
+    console.error('Error connecting to database:', err);
+    process.exit(1);
   }
 };
 
-// Inicializar la base de datos al arrancar la aplicación
+// Inicializar la conexión a la base de datos
 initializeDatabase();
 
 export default pool;
