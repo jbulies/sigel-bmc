@@ -44,8 +44,10 @@ const Settings = () => {
       if (!response.ok) throw new Error("Error al cargar la configuración");
       return response.json();
     },
-    onSuccess: (data) => {
-      form.reset(data);
+    meta: {
+      onSuccess: (data: EmailSettingsForm) => {
+        form.reset(data);
+      }
     }
   });
 
@@ -73,7 +75,7 @@ const Settings = () => {
         description: "La configuración de correo se ha guardado exitosamente",
       });
     },
-    onError: (error) => {
+    onError: (error: Error) => {
       toast({
         title: "Error",
         description: error.message || "No se pudo guardar la configuración",
