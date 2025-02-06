@@ -36,19 +36,12 @@ export const login = async (req: Request, res: Response) => {
     const user = users[0];
     console.log('Stored hashed password:', user.password);
     
-    // Ensure password is a string, trim it and convert to string if needed
+    // Asegurarse de que la contraseña sea una cadena y esté limpia
     const cleanPassword = String(password).trim();
     console.log('Clean password to compare:', cleanPassword);
     
-    // Use await explicitly and handle the comparison result
-    let isValid = false;
-    try {
-      isValid = await bcrypt.compare(cleanPassword, user.password);
-    } catch (error) {
-      console.error('Error comparing passwords:', error);
-      isValid = false;
-    }
-    
+    // Usar bcrypt.compare de manera más directa
+    const isValid = await bcrypt.compare(cleanPassword, user.password);
     console.log('Password comparison result:', isValid);
 
     if (!isValid) {
