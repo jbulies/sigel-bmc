@@ -10,9 +10,12 @@ import { useQuery } from "@tanstack/react-query";
 import { Report } from "@/types/report";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { useToast } from "@/hooks/use-toast";
 
 const Dashboard = () => {
-  const { data: reports, isLoading } = useQuery({
+  const { toast } = useToast();
+  
+  const { data: reports, isLoading, error } = useQuery({
     queryKey: ["reports"],
     queryFn: async () => {
       const response = await fetch("/api/reports", {
@@ -20,10 +23,20 @@ const Dashboard = () => {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      if (!response.ok) throw new Error("Error al cargar los reportes");
+      if (!response.ok) {
+        throw new Error("Error al cargar los reportes");
+      }
       return response.json() as Promise<Report[]>;
     },
   });
+
+  if (error) {
+    toast({
+      variant: "destructive",
+      title: "Error",
+      description: "No se pudieron cargar los reportes",
+    });
+  }
 
   const stats = [
     {
@@ -104,6 +117,9 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+            {!isLoading && (!reports || reports.length === 0) && (
+              <p className="text-muted-foreground">No hay reportes disponibles</p>
+            )}
           </div>
         </Card>
 
@@ -123,6 +139,9 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
+            {!isLoading && (!reports || reports.length === 0) && (
+              <p className="text-muted-foreground">No hay actividad reciente</p>
+            )}
           </div>
         </Card>
       </div>
