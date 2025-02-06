@@ -6,7 +6,7 @@ import pool from '../config/database';
 import { sendPasswordResetEmail } from '../services/email.service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const BCRYPT_ROUNDS = 10; // Reducido de 12 a 10 para mejor rendimiento
+const SALT = '$2a$10$DaZ.h.5hZNlMQNKRGHCYWu'; // Salt fijo para todas las contraseñas
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -14,23 +14,18 @@ export const login = async (req: Request, res: Response) => {
     console.log('Login attempt for email:', email);
 
     if (!email || !password) {
-      console.log('Missing email or password');
       return res.status(400).json({
         success: false,
         message: 'Email y contraseña son requeridos'
       });
     }
 
-    // Consulta simplificada
     const [users]: any = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
 
-    console.log('Users found:', users.length);
-
     if (!users.length) {
-      console.log('No user found with email:', email);
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
@@ -38,21 +33,23 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const user = users[0];
-    console.log('Comparing passwords for user:', user.email);
     
-    // Comparación de contraseñas simplificada
-    const isValid = await bcrypt.compare(password, user.password);
+    // Usar el salt fijo para generar el hash
+    const hashedPassword = bcrypt.hashSync(password, SALT);
+    console.log('Generated hash:', hashedPassword);
+    console.log('Stored hash:', user.password);
+    
+    // Comparación directa de hashes
+    const isValid = hashedPassword === user.password;
     console.log('Password valid:', isValid);
 
     if (!isValid) {
-      console.log('Invalid password for user:', email);
       return res.status(401).json({
         success: false,
         message: 'Credenciales inválidas'
       });
     }
 
-    // Generación de token simplificada
     const token = jwt.sign(
       { id: user.id, role: user.role },
       JWT_SECRET,
@@ -160,7 +157,6 @@ export const resetPassword = async (req: Request, res: Response) => {
 export const register = async (req: Request, res: Response) => {
   try {
     const { name, email, password, invitationToken } = req.body;
-    console.log('Register attempt with email:', email);
 
     const [invitations]: any = await pool.query(
       'SELECT * FROM invitations WHERE token = ? AND status = "Pendiente" AND expires_at > NOW()',
@@ -168,7 +164,6 @@ export const register = async (req: Request, res: Response) => {
     );
 
     if (!invitations.length) {
-      console.log('Invalid or expired invitation token');
       return res.status(400).json({
         success: false,
         message: 'Invitación inválida o expirada'
@@ -176,13 +171,11 @@ export const register = async (req: Request, res: Response) => {
     }
 
     const invitation = invitations[0];
-    console.log('Valid invitation found for role:', invitation.role);
-
-    // Hash de contraseña simplificado
-    const hashedPassword = await bcrypt.hash(password, BCRYPT_ROUNDS);
+    
+    // Usar el salt fijo para el registro
+    const hashedPassword = bcrypt.hashSync(password, SALT);
 
     await pool.query('BEGIN');
-    console.log('Beginning transaction for user registration');
 
     const [result]: any = await pool.query(
       'INSERT INTO users (name, email, password, role) VALUES (?, ?, ?, ?)',
@@ -195,7 +188,6 @@ export const register = async (req: Request, res: Response) => {
     );
 
     await pool.query('COMMIT');
-    console.log('User registration successful');
 
     const authToken = jwt.sign(
       { id: result.insertId, role: invitation.role },
