@@ -55,6 +55,6 @@ CREATE TABLE IF NOT EXISTS notifications (
 INSERT INTO users (name, email, password, role) VALUES (
   'Admin',
   'admin@example.com',
-  '$2b$10$YourNewHashHere',
+  '$2b$10$sNgLgZ9ZsMLDA7cQYG4sb.L2wFn9Qq4oeiSbwGDPrsSva7FVF5CLi',
   'Administrador'
 );
