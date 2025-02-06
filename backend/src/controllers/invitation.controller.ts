@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import pool from '../config/database';
+import { pool } from '../config/database';
 import { sendInvitationEmail } from '../services/email.service';
 import crypto from 'crypto';
 

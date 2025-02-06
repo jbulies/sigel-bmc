@@ -2,7 +2,7 @@ import { Request, Response } from 'express';
 import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
-import pool from '../config/database';
+import { pool } from '../config/database';
 import { sendPasswordResetEmail } from '../services/email.service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
