@@ -50,17 +50,6 @@ CREATE TABLE IF NOT EXISTS notifications (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Crear tabla de configuración de correo
-CREATE TABLE IF NOT EXISTS email_settings (
-  id INT AUTO_INCREMENT PRIMARY KEY,
-  smtp_host VARCHAR(255) NOT NULL,
-  smtp_port VARCHAR(10) NOT NULL,
-  smtp_user VARCHAR(255) NOT NULL,
-  smtp_password VARCHAR(255) NOT NULL,
-  sender_email VARCHAR(255) NOT NULL,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-);
-
 -- Insertar usuario administrador por defecto con contraseña: Admin123*
 -- Hash generado con bcryptjs usando $2b$
 INSERT INTO users (name, email, password, role) VALUES (
