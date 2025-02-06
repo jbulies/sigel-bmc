@@ -12,7 +12,7 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);
-    console.log('Received password:', password); // Add this log
+    console.log('Received password:', password);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -34,11 +34,21 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const user = users[0];
-    console.log('Stored hashed password:', user.password); // Add this log
+    console.log('Stored hashed password:', user.password);
     
-    // Ensure password is a string and trim it
+    // Ensure password is a string, trim it and convert to string if needed
     const cleanPassword = String(password).trim();
-    const isValid = await bcrypt.compare(cleanPassword, user.password);
+    console.log('Clean password to compare:', cleanPassword);
+    
+    // Use await explicitly and handle the comparison result
+    let isValid = false;
+    try {
+      isValid = await bcrypt.compare(cleanPassword, user.password);
+    } catch (error) {
+      console.error('Error comparing passwords:', error);
+      isValid = false;
+    }
+    
     console.log('Password comparison result:', isValid);
 
     if (!isValid) {
