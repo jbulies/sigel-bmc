@@ -2,6 +2,8 @@ import { Request, Response } from 'express';
 import pool from '../config/database';
 import bcrypt from 'bcryptjs';
 
+const SALT_ROUNDS = 10;
+
 export const getProfile = async (req: Request, res: Response) => {
   try {
     const userId = req.user?.id;
@@ -47,7 +49,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     let hashedPassword;
     if (newPassword) {
-      hashedPassword = await bcrypt.hash(newPassword, 10);
+      hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
     }
 
     await pool.query(
