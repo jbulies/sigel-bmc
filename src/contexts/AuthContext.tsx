@@ -59,13 +59,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      console.log('Attempting login with:', { email });
+      console.log('Attempting login with:', { email, passwordLength: password.length });
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ 
+          email, 
+          password: password.trim() // Asegurarse de que la contraseña esté limpia
+        }),
       });
 
       console.log('Server response status:', response.status);

@@ -55,7 +55,13 @@ const Login = () => {
   const onSubmit = async (values: z.infer<typeof loginSchema>) => {
     setIsLoading(true);
     try {
-      await login(values.email, values.password);
+      // Asegurarse de que la contraseña sea una cadena y esté limpia
+      const cleanPassword = values.password.trim();
+      console.log('Submitting with password length:', cleanPassword.length);
+      await login(values.email, cleanPassword);
+    } catch (error) {
+      console.error('Login error:', error);
+      toast.error('Error al iniciar sesión');
     } finally {
       setIsLoading(false);
     }
@@ -63,7 +69,7 @@ const Login = () => {
 
   const onResetSubmit = async (values: z.infer<typeof resetSchema>) => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/request-password-reset', {
+      const response = await fetch('http://localhost:8080/api/auth/request-password-reset', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -104,7 +110,12 @@ const Login = () => {
                 <FormItem>
                   <FormLabel>Email</FormLabel>
                   <FormControl>
-                    <Input placeholder="correo@ejemplo.com" {...field} />
+                    <Input 
+                      placeholder="correo@ejemplo.com" 
+                      type="email"
+                      autoComplete="email"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -117,7 +128,11 @@ const Login = () => {
                 <FormItem>
                   <FormLabel>Contraseña</FormLabel>
                   <FormControl>
-                    <Input type="password" {...field} />
+                    <Input 
+                      type="password"
+                      autoComplete="current-password"
+                      {...field} 
+                    />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
