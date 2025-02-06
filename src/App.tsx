@@ -12,10 +12,10 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
+import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
-// Componente de redirección basado en autenticación
 const PrivateRoute = ({ children }: { children: React.ReactNode }) => {
   const { user, isLoading } = useAuth();
   
@@ -55,11 +55,15 @@ const App = () => {
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Ruta raíz redirige según autenticación */}
+              {/* Ruta raíz */}
               <Route 
                 path="/" 
                 element={
-                  <Navigate to="/dashboard" replace />
+                  <PrivateRoute>
+                    <Layout>
+                      <Index />
+                    </Layout>
+                  </PrivateRoute>
                 } 
               />
               
