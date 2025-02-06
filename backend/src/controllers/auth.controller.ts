@@ -64,7 +64,6 @@ export const login = async (req: Request, res: Response) => {
     console.log('Login attempt with email:', req.body.email);
     const { email, password } = req.body;
 
-    // Log the raw password input
     console.log('Raw password input:', {
       value: password,
       type: typeof password,
@@ -72,13 +71,11 @@ export const login = async (req: Request, res: Response) => {
       isString: typeof password === 'string'
     });
 
-    // Ensure password is a string
     if (typeof password !== 'string') {
       console.log('Password is not a string:', typeof password);
       return res.status(400).json({ message: 'Formato de contraseña inválido' });
     }
 
-    // First check: Find user by email
     const [users]: any = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
@@ -95,20 +92,23 @@ export const login = async (req: Request, res: Response) => {
     console.log('User status:', user.status);
     console.log('Stored hashed password:', user.password);
 
-    // Second check: Verify user status
     if (user.status !== 'Activo') {
       console.log('User account is not active');
       return res.status(401).json({ message: 'Cuenta de usuario inactiva' });
     }
 
-    // Third check: Verify password
-    // Ensure we're comparing strings
     const trimmedPassword = password.trim();
     console.log('Password comparison:', {
       trimmedPassword,
       trimmedLength: trimmedPassword.length,
       originalLength: password.length,
       hasWhitespace: password !== trimmedPassword
+    });
+    
+    // Agregar más logs para debug
+    console.log('About to compare password:', {
+      plaintext: trimmedPassword,
+      hash: user.password
     });
     
     const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
@@ -119,7 +119,6 @@ export const login = async (req: Request, res: Response) => {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    // Generate token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       JWT_SECRET,
