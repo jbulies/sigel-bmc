@@ -1,5 +1,5 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
+import bcryptjs from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 import pool from '../config/database';
@@ -12,7 +12,6 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
     console.log('Login attempt for email:', email);
-    console.log('Received password:', password);
 
     if (!email || !password) {
       return res.status(400).json({
@@ -40,8 +39,8 @@ export const login = async (req: Request, res: Response) => {
     const cleanPassword = String(password).trim();
     console.log('Clean password to compare:', cleanPassword);
     
-    // Usar bcrypt.compare de manera más directa
-    const isValid = await bcrypt.compare(cleanPassword, user.password);
+    // Usar bcryptjs.compare de manera explícita
+    const isValid = await bcryptjs.compare(cleanPassword, user.password);
     console.log('Password comparison result:', isValid);
 
     if (!isValid) {
@@ -136,7 +135,7 @@ export const resetPassword = async (req: Request, res: Response) => {
     }
 
     // Generar hash con bcrypt usando SALT_ROUNDS
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const hashedPassword = await bcryptjs.hash(password, SALT_ROUNDS);
 
     await pool.query(
       'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
@@ -175,7 +174,7 @@ export const register = async (req: Request, res: Response) => {
     const invitation = invitations[0];
     
     // Generar hash con bcrypt usando SALT_ROUNDS
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    const hashedPassword = await bcryptjs.hash(password, SALT_ROUNDS);
 
     await pool.query('BEGIN');
 

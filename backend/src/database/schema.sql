@@ -51,10 +51,10 @@ CREATE TABLE IF NOT EXISTS notifications (
 );
 
 -- Insertar usuario administrador por defecto con contraseña: Admin123*
--- El hash fue generado usando el salt fijo
+-- Hash generado con bcryptjs usando $2b$
 INSERT INTO users (name, email, password, role) VALUES (
   'Admin',
   'admin@example.com',
-  '$2a$10$DaZ.h.5hZNlMQNKRGHCYWuqPJ/X6qyGqT04mkF4t7ISzHxQXiqHK2',
+  '$2b$10$YourNewHashHere',
   'Administrador'
 );
