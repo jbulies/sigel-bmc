@@ -64,6 +64,12 @@ export const login = async (req: Request, res: Response) => {
     console.log('Login attempt with email:', req.body.email);
     const { email, password } = req.body;
 
+    // Ensure password is a string
+    if (typeof password !== 'string') {
+      console.log('Password is not a string:', typeof password);
+      return res.status(400).json({ message: 'Formato de contraseña inválido' });
+    }
+
     // First check: Find user by email
     const [users]: any = await pool.query(
       'SELECT * FROM users WHERE email = ?',
@@ -89,7 +95,11 @@ export const login = async (req: Request, res: Response) => {
     }
 
     // Third check: Verify password
-    const isValidPassword = await bcrypt.compare(password, user.password);
+    // Ensure we're comparing strings
+    const trimmedPassword = password.trim();
+    console.log('Trimmed password length:', trimmedPassword.length);
+    
+    const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
     console.log('Password validation result:', isValidPassword);
 
     if (!isValidPassword) {
