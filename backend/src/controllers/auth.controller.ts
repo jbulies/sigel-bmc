@@ -9,7 +9,7 @@ const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 const jwtSignOptions: SignOptions = {
-  expiresIn: JWT_EXPIRES_IN
+  expiresIn: JWT_EXPIRES_IN as jwt.SignOptions['expiresIn']
 };
 
 export const register = async (req: Request, res: Response) => {
