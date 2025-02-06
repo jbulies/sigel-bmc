@@ -34,7 +34,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const fetchUserProfile = async (token: string) => {
     try {
-      const response = await fetch('http://localhost:3000/api/users/profile', {
+      const response = await fetch('http://localhost:8080/api/users/profile', {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -56,7 +56,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
-      const response = await fetch('http://localhost:3000/api/auth/login', {
+      const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -75,6 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         toast.error(data.message || 'Error al iniciar sesión');
       }
     } catch (error) {
+      console.error('Error en login:', error);
       toast.error('Error al conectar con el servidor');
     }
   };
