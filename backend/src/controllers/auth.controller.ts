@@ -61,39 +61,48 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    console.log('Intento de inicio de sesión:', req.body);
+    console.log('Login attempt with email:', req.body.email);
     const { email, password } = req.body;
 
+    // First check: Find user by email
     const [users]: any = await pool.query(
-      'SELECT * FROM users WHERE email = ? AND status = "Activo"',
+      'SELECT * FROM users WHERE email = ?',
       [email]
     );
 
-    console.log('Usuarios encontrados:', users.length);
+    console.log('Users found:', users.length);
 
     if (!users.length) {
-      console.log('No se encontró el usuario');
+      console.log('No user found with email:', email);
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
     const user = users[0];
-    console.log('Usuario encontrado:', { id: user.id, email: user.email, role: user.role });
+    console.log('User status:', user.status);
 
+    // Second check: Verify user status
+    if (user.status !== 'Activo') {
+      console.log('User account is not active');
+      return res.status(401).json({ message: 'Cuenta de usuario inactiva' });
+    }
+
+    // Third check: Verify password
     const isValidPassword = await bcrypt.compare(password, user.password);
-    console.log('Contraseña válida:', isValidPassword);
-    
+    console.log('Password validation result:', isValidPassword);
+
     if (!isValidPassword) {
-      console.log('Contraseña incorrecta');
+      console.log('Invalid password for user:', email);
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
+    // Generate token
     const token = jwt.sign(
       { id: user.id, role: user.role },
       JWT_SECRET,
       jwtSignOptions
     );
 
-    console.log('Token generado exitosamente');
+    console.log('Login successful for user:', email);
 
     res.json({
       message: 'Inicio de sesión exitoso',
@@ -106,7 +115,7 @@ export const login = async (req: Request, res: Response) => {
       }
     });
   } catch (error) {
-    console.error('Error en login:', error);
+    console.error('Error in login process:', error);
     res.status(500).json({ message: 'Error al iniciar sesión' });
   }
 };
