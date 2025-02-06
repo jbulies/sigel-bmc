@@ -1,8 +1,6 @@
 import { Router } from 'express';
 import { authMiddleware } from '../middlewares/auth.middleware';
-import * as dotenv from 'dotenv';
-import * as fs from 'fs';
-import * as path from 'path';
+import { pool } from '../config/database';
 
 const router = Router();
 
@@ -12,30 +10,22 @@ router.post('/email', async (req, res) => {
   try {
     const { smtpHost, smtpPort, smtpUser, smtpPassword, senderEmail } = req.body;
     
-    // Leer el archivo .env actual
-    const envPath = path.resolve(__dirname, '../../.env');
-    const currentEnv = dotenv.parse(fs.readFileSync(envPath));
+    // Verificar si ya existe una configuración
+    const [existingConfig] = await pool.query('SELECT id FROM email_settings LIMIT 1');
     
-    // Actualizar las variables
-    const newEnv = {
-      ...currentEnv,
-      SMTP_HOST: smtpHost,
-      SMTP_PORT: smtpPort,
-      SMTP_USER: smtpUser,
-      SMTP_PASS: smtpPassword,
-      SENDER_EMAIL: senderEmail
-    };
-    
-    // Convertir el objeto a formato .env
-    const envContent = Object.entries(newEnv)
-      .map(([key, value]) => `${key}=${value}`)
-      .join('\n');
-    
-    // Escribir el archivo .env
-    fs.writeFileSync(envPath, envContent);
-    
-    // Recargar las variables de entorno
-    dotenv.config();
+    if (existingConfig.length > 0) {
+      // Actualizar la configuración existente
+      await pool.query(
+        'UPDATE email_settings SET smtp_host = ?, smtp_port = ?, smtp_user = ?, smtp_password = ?, sender_email = ?',
+        [smtpHost, smtpPort, smtpUser, smtpPassword, senderEmail]
+      );
+    } else {
+      // Insertar nueva configuración
+      await pool.query(
+        'INSERT INTO email_settings (smtp_host, smtp_port, smtp_user, smtp_password, sender_email) VALUES (?, ?, ?, ?, ?)',
+        [smtpHost, smtpPort, smtpUser, smtpPassword, senderEmail]
+      );
+    }
     
     res.json({ message: 'Configuración guardada exitosamente' });
   } catch (error) {
@@ -46,14 +36,20 @@ router.post('/email', async (req, res) => {
 
 router.get('/email', async (req, res) => {
   try {
-    const config = {
-      smtpHost: process.env.SMTP_HOST,
-      smtpPort: process.env.SMTP_PORT,
-      smtpUser: process.env.SMTP_USER,
-      senderEmail: process.env.SENDER_EMAIL
-    };
-    res.json(config);
+    const [config] = await pool.query('SELECT smtp_host, smtp_port, smtp_user, sender_email FROM email_settings LIMIT 1');
+    
+    if (config.length > 0) {
+      res.json(config[0]);
+    } else {
+      res.json({
+        smtpHost: '',
+        smtpPort: '',
+        smtpUser: '',
+        senderEmail: ''
+      });
+    }
   } catch (error) {
+    console.error('Error al obtener la configuración:', error);
     res.status(500).json({ error: 'Error al obtener la configuración' });
   }
 });
