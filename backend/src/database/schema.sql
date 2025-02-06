@@ -1,6 +1,6 @@
 -- Crear base de datos
-CREATE DATABASE IF NOT EXISTS sigel_bmc;
-USE sigel_bmc;
+CREATE DATABASE IF NOT EXISTS bmcgw_sigel;
+USE bmcgw_sigel;
 
 -- Tabla de usuarios
 CREATE TABLE users (
