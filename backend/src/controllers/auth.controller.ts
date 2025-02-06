@@ -71,6 +71,7 @@ export const login = async (req: Request, res: Response) => {
     );
 
     console.log('Users found:', users.length);
+    console.log('Raw password from request:', password);
 
     if (!users.length) {
       console.log('No user found with email:', email);
@@ -79,6 +80,7 @@ export const login = async (req: Request, res: Response) => {
 
     const user = users[0];
     console.log('User status:', user.status);
+    console.log('Stored hashed password:', user.password);
 
     // Second check: Verify user status
     if (user.status !== 'Activo') {
