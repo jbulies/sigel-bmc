@@ -19,7 +19,7 @@ app.use('/api/users', authenticateToken, userRoutes);
 app.use('/api/reports', authenticateToken, reportRoutes);
 
 // Configuración para servir archivos estáticos
-const distPath = path.join(__dirname, '../../../GitHub/sigel-bmc/dist');
+const distPath = path.join(__dirname, '../../../sigel-bmc/dist');
 console.log('Ruta del dist:', distPath);
 
 // Servir archivos estáticos desde el directorio dist
