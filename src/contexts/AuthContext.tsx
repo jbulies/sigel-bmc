@@ -56,6 +56,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const login = async (email: string, password: string) => {
     try {
+      console.log('Intentando login con:', { email });
+      
       const response = await fetch('http://localhost:8080/api/auth/login', {
         method: 'POST',
         headers: {
@@ -64,7 +66,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         body: JSON.stringify({ email, password }),
       });
 
+      console.log('Respuesta del servidor:', response.status);
       const data = await response.json();
+      console.log('Datos de respuesta:', data);
 
       if (response.ok) {
         localStorage.setItem('token', data.token);
@@ -72,6 +76,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         toast.success('Inicio de sesión exitoso');
         navigate('/');
       } else {
+        console.error('Error en la respuesta:', data);
         toast.error(data.message || 'Error al iniciar sesión');
       }
     } catch (error) {
