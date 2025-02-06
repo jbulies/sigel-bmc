@@ -1,12 +1,16 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import jwt, { SignOptions } from 'jsonwebtoken';
 import pool from '../config/database';
 import { sendInvitationEmail, sendPasswordResetEmail } from '../services/email.service';
 import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
+
+const jwtSignOptions: SignOptions = {
+  expiresIn: JWT_EXPIRES_IN
+};
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -41,8 +45,8 @@ export const register = async (req: Request, res: Response) => {
 
     const token_jwt = jwt.sign(
       { id: result.insertId, role: invitation.role },
-      JWT_SECRET as jwt.Secret,
-      { expiresIn: JWT_EXPIRES_IN }
+      JWT_SECRET,
+      jwtSignOptions
     );
 
     res.status(201).json({
@@ -77,8 +81,8 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      JWT_SECRET as jwt.Secret,
-      { expiresIn: JWT_EXPIRES_IN }
+      JWT_SECRET,
+      jwtSignOptions
     );
 
     res.json({
