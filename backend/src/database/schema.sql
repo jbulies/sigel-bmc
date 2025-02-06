@@ -56,10 +56,10 @@ CREATE TABLE notifications (
   FOREIGN KEY (user_id) REFERENCES users(id)
 );
 
--- Insertar usuario administrador por defecto
+-- Insertar usuario administrador por defecto con contraseña: Admin123*
 INSERT INTO users (name, email, password, role) VALUES (
   'Admin',
   'admin@example.com',
-  '$2a$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewYpfQN2YW3qy5MW', -- password: Admin123*
+  '$2a$10$DaZ.h.5hZNlMQNKRGHCYWuqPJ/X6qyGqT04mkF4t7ISzHxQXiqHK2',
   'Administrador'
 );
