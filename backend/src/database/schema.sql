@@ -10,6 +10,8 @@ CREATE TABLE users (
   password VARCHAR(255) NOT NULL,
   role ENUM('Usuario', 'Logístico', 'Informático', 'Administrador') NOT NULL,
   status ENUM('Activo', 'Inactivo') DEFAULT 'Activo',
+  reset_token VARCHAR(255),
+  reset_token_expires TIMESTAMP NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 );
@@ -27,51 +29,11 @@ CREATE TABLE invitations (
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
--- Tabla de notificaciones
-CREATE TABLE notifications (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  user_id INT NOT NULL,
-  title VARCHAR(255) NOT NULL,
-  message TEXT NOT NULL,
-  is_read BOOLEAN DEFAULT FALSE,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
-);
-
--- Tabla de reportes
-CREATE TABLE reports (
-  id INT PRIMARY KEY AUTO_INCREMENT,
-  title VARCHAR(255) NOT NULL,
-  description TEXT NOT NULL,
-  status ENUM('Pendiente', 'En Progreso', 'Resuelto') DEFAULT 'Pendiente',
-  priority ENUM('Baja', 'Media', 'Alta') NOT NULL,
-  department ENUM('Logística', 'Informática') NOT NULL,
-  created_by INT NOT NULL,
-  assigned_to INT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-  FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE RESTRICT,
-  FOREIGN KEY (assigned_to) REFERENCES users(id) ON DELETE SET NULL
-);
-
--- Índices para mejorar el rendimiento
-CREATE INDEX idx_notifications_user ON notifications(user_id);
-CREATE INDEX idx_reports_created_by ON reports(created_by);
-CREATE INDEX idx_reports_assigned_to ON reports(assigned_to);
-CREATE INDEX idx_reports_department ON reports(department);
-CREATE INDEX idx_reports_status ON reports(status);
-
--- Trigger para actualizar updated_at
-DELIMITER //
-CREATE TRIGGER update_timestamp
-BEFORE UPDATE ON users
-FOR EACH ROW
-BEGIN
-    SET NEW.updated_at = CURRENT_TIMESTAMP;
-END;//
-DELIMITER ;
+-- Índices
+CREATE INDEX idx_users_email ON users(email);
+CREATE INDEX idx_invitations_token ON invitations(token);
 
 -- Insertar usuario administrador por defecto
--- Contraseña: admin123 (generada con bcrypt usando 10 rounds)
+-- Password: admin123
 INSERT INTO users (name, email, password, role) VALUES 
-('Administrador', 'admin@example.com', '$2a$10$YQtXcGxpWBPgXELYQXF/8.n9wkzV5Aq5mhMJHFGkO3K.TLVIbJ.Iy', 'Administrador');
+('Administrador', 'admin@example.com', '$2b$10$ng6.rWNxqzOVWjPR.xhgDuH8nPx7KyGkAT0yJUBVGQGXM.7Nfn3Hy', 'Administrador');
