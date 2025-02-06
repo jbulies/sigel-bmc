@@ -61,27 +61,20 @@ export const register = async (req: Request, res: Response) => {
 
 export const login = async (req: Request, res: Response) => {
   try {
-    console.log('Login attempt with email:', req.body.email);
     const { email, password } = req.body;
+    console.log('Starting login process for:', email);
 
-    console.log('Raw password input:', {
-      value: password,
-      type: typeof password,
-      length: password?.length,
-      isString: typeof password === 'string'
-    });
-
-    if (typeof password !== 'string') {
-      console.log('Password is not a string:', typeof password);
+    // Verificación básica de la contraseña
+    if (!password || typeof password !== 'string') {
+      console.log('Invalid password format:', password);
       return res.status(400).json({ message: 'Formato de contraseña inválido' });
     }
 
+    // Buscar usuario
     const [users]: any = await pool.query(
       'SELECT * FROM users WHERE email = ?',
       [email]
     );
-
-    console.log('Users found:', users.length);
 
     if (!users.length) {
       console.log('No user found with email:', email);
@@ -89,41 +82,31 @@ export const login = async (req: Request, res: Response) => {
     }
 
     const user = users[0];
-    console.log('User status:', user.status);
-    console.log('Stored hashed password:', user.password);
-
+    
+    // Verificar estado del usuario
     if (user.status !== 'Activo') {
       console.log('User account is not active');
       return res.status(401).json({ message: 'Cuenta de usuario inactiva' });
     }
 
-    const trimmedPassword = password.trim();
-    console.log('Password comparison:', {
-      trimmedPassword,
-      trimmedLength: trimmedPassword.length,
-      originalLength: password.length,
-      hasWhitespace: password !== trimmedPassword
-    });
+    // Limpiar contraseña y preparar para comparación
+    const cleanPassword = password.trim();
     
-    // Agregar más logs para debug
-    console.log('About to compare password:', {
-      plaintext: trimmedPassword,
-      hash: user.password,
-      saltRounds: 10
+    console.log('Password comparison preparation:', {
+      inputPassword: cleanPassword,
+      storedHash: user.password
     });
 
-    // Generar un nuevo hash para comparar
-    const testHash = await bcrypt.hash(trimmedPassword, 10);
-    console.log('Test hash generated:', testHash);
-    
-    const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
-    console.log('Password validation result:', isValidPassword);
+    // Intentar comparación directa
+    const isValid = await bcrypt.compare(cleanPassword, user.password);
+    console.log('Password validation result:', isValid);
 
-    if (!isValidPassword) {
+    if (!isValid) {
       console.log('Invalid password for user:', email);
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
+    // Generar token JWT
     const token = jwt.sign(
       { id: user.id, role: user.role },
       JWT_SECRET,

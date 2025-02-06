@@ -72,6 +72,6 @@ END;//
 DELIMITER ;
 
 -- Insertar usuario administrador por defecto
--- Contraseña: admin123 (hasheada con bcrypt usando salt 10)
+-- Contraseña: admin123
 INSERT INTO users (name, email, password, role) VALUES 
 ('Administrador', 'admin@example.com', '$2a$10$mWK8RZXXLcgZKqp0.QZyUObQJ0GBwOG9ZyEynqWX.gkUZaAQAFzRi', 'Administrador');
