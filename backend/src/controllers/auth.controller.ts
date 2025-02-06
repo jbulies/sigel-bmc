@@ -6,7 +6,7 @@ import { sendInvitationEmail, sendPasswordResetEmail } from '../services/email.s
 import crypto from 'crypto';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const JWT_EXPIRES_IN = '24h';
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || '24h';
 
 export const register = async (req: Request, res: Response) => {
   try {
@@ -59,7 +59,6 @@ export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
 
-    // Buscar usuario
     const [users]: any = await pool.query(
       'SELECT * FROM users WHERE email = ? AND status = "Activo"',
       [email]
@@ -71,17 +70,15 @@ export const login = async (req: Request, res: Response) => {
 
     const user = users[0];
 
-    // Verificar contraseña
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
       return res.status(401).json({ message: 'Credenciales inválidas' });
     }
 
-    // Generar token JWT
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      process.env.JWT_SECRET || 'your-secret-key',
-      { expiresIn: process.env.JWT_EXPIRES_IN || '24h' }
+      JWT_SECRET,
+      { expiresIn: JWT_EXPIRES_IN }
     );
 
     res.json({
