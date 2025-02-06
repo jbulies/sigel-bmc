@@ -29,9 +29,39 @@ CREATE TABLE invitations (
   FOREIGN KEY (created_by) REFERENCES users(id) ON DELETE SET NULL
 );
 
+-- Tabla de reportes
+CREATE TABLE reports (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  title VARCHAR(255) NOT NULL,
+  description TEXT NOT NULL,
+  status ENUM('Pendiente', 'En Progreso', 'Resuelto') DEFAULT 'Pendiente',
+  priority ENUM('Baja', 'Media', 'Alta') NOT NULL,
+  department ENUM('Logística', 'Informática') NOT NULL,
+  created_by INT NOT NULL,
+  assigned_to INT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  FOREIGN KEY (created_by) REFERENCES users(id),
+  FOREIGN KEY (assigned_to) REFERENCES users(id)
+);
+
+-- Tabla de notificaciones
+CREATE TABLE notifications (
+  id INT PRIMARY KEY AUTO_INCREMENT,
+  user_id INT NOT NULL,
+  title VARCHAR(255) NOT NULL,
+  message TEXT NOT NULL,
+  read BOOLEAN DEFAULT FALSE,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
+
 -- Índices
 CREATE INDEX idx_users_email ON users(email);
 CREATE INDEX idx_invitations_token ON invitations(token);
+CREATE INDEX idx_reports_created_by ON reports(created_by);
+CREATE INDEX idx_reports_assigned_to ON reports(assigned_to);
+CREATE INDEX idx_notifications_user_id ON notifications(user_id);
 
 -- Insertar usuario administrador por defecto
 -- Password: admin123
