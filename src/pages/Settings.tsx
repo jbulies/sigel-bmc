@@ -2,55 +2,25 @@ import { useForm } from "react-hook-form";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
+import { useToast } from "@/components/ui/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
 import { Form, FormField, FormItem, FormLabel, FormControl, FormMessage } from "@/components/ui/form";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
 
-const emailSettingsSchema = z.object({
-  smtpHost: z.string().min(1, "El servidor SMTP es requerido"),
-  smtpPort: z.string().min(1, "El puerto SMTP es requerido"),
-  smtpUser: z.string().email("Debe ser un email válido"),
-  smtpPassword: z.string().min(1, "La contraseña SMTP es requerida"),
-  senderEmail: z.string().email("Debe ser un email válido")
-});
-
-type EmailSettingsForm = z.infer<typeof emailSettingsSchema>;
+interface EmailSettingsForm {
+  smtpHost: string;
+  smtpPort: string;
+  smtpUser: string;
+  smtpPassword: string;
+  senderEmail: string;
+}
 
 const Settings = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const form = useForm<EmailSettingsForm>({
-    resolver: zodResolver(emailSettingsSchema),
-    defaultValues: {
-      smtpHost: "",
-      smtpPort: "",
-      smtpUser: "",
-      smtpPassword: "",
-      senderEmail: ""
-    }
-  });
+  const form = useForm<EmailSettingsForm>();
 
-  const { data: currentSettings } = useQuery({
-    queryKey: ['emailSettings'],
-    queryFn: async () => {
-      const response = await fetch("/api/settings/email", {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-      if (!response.ok) throw new Error("Error al cargar la configuración");
-      return response.json();
-    },
-    onSuccess: (data) => {
-      form.reset(data);
-    }
-  });
-
-  const mutation = useMutation({
-    mutationFn: async (data: EmailSettingsForm) => {
+  const onSubmit = async (data: EmailSettingsForm) => {
+    try {
       const response = await fetch("/api/settings/email", {
         method: "POST",
         headers: {
@@ -59,31 +29,20 @@ const Settings = () => {
         },
         body: JSON.stringify(data),
       });
-      
-      if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || "Error al guardar la configuración");
-      }
-      
-      return response.json();
-    },
-    onSuccess: () => {
+
+      if (!response.ok) throw new Error("Error al guardar la configuración");
+
       toast({
         title: "Configuración guardada",
         description: "La configuración de correo se ha guardado exitosamente",
       });
-    },
-    onError: (error) => {
+    } catch (error) {
       toast({
         title: "Error",
-        description: error.message || "No se pudo guardar la configuración",
+        description: "No se pudo guardar la configuración",
         variant: "destructive",
       });
     }
-  });
-
-  const onSubmit = (data: EmailSettingsForm) => {
-    mutation.mutate(data);
   };
 
   // Si no es administrador, no mostrar la página
@@ -124,7 +83,7 @@ const Settings = () => {
                 <FormItem>
                   <FormLabel>Puerto SMTP</FormLabel>
                   <FormControl>
-                    <Input placeholder="587" {...field} />
+                    <Input placeholder="587" type="number" {...field} />
                   </FormControl>
                   <FormMessage />
                 </FormItem>
@@ -169,12 +128,7 @@ const Settings = () => {
                 </FormItem>
               )}
             />
-            <Button 
-              type="submit" 
-              disabled={mutation.isPending}
-            >
-              {mutation.isPending ? "Guardando..." : "Guardar Configuración"}
-            </Button>
+            <Button type="submit">Guardar Configuración</Button>
           </form>
         </Form>
       </Card>
