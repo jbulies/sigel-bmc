@@ -41,7 +41,7 @@ export const register = async (req: Request, res: Response) => {
 
     const token_jwt = jwt.sign(
       { id: result.insertId, role: invitation.role },
-      JWT_SECRET,
+      JWT_SECRET as jwt.Secret,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
@@ -77,7 +77,7 @@ export const login = async (req: Request, res: Response) => {
 
     const token = jwt.sign(
       { id: user.id, role: user.role },
-      JWT_SECRET,
+      JWT_SECRET as jwt.Secret,
       { expiresIn: JWT_EXPIRES_IN }
     );
 
