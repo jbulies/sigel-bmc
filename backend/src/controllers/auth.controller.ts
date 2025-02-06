@@ -64,6 +64,14 @@ export const login = async (req: Request, res: Response) => {
     console.log('Login attempt with email:', req.body.email);
     const { email, password } = req.body;
 
+    // Log the raw password input
+    console.log('Raw password input:', {
+      value: password,
+      type: typeof password,
+      length: password?.length,
+      isString: typeof password === 'string'
+    });
+
     // Ensure password is a string
     if (typeof password !== 'string') {
       console.log('Password is not a string:', typeof password);
@@ -77,7 +85,6 @@ export const login = async (req: Request, res: Response) => {
     );
 
     console.log('Users found:', users.length);
-    console.log('Raw password from request:', password);
 
     if (!users.length) {
       console.log('No user found with email:', email);
@@ -97,7 +104,12 @@ export const login = async (req: Request, res: Response) => {
     // Third check: Verify password
     // Ensure we're comparing strings
     const trimmedPassword = password.trim();
-    console.log('Trimmed password length:', trimmedPassword.length);
+    console.log('Password comparison:', {
+      trimmedPassword,
+      trimmedLength: trimmedPassword.length,
+      originalLength: password.length,
+      hasWhitespace: password !== trimmedPassword
+    });
     
     const isValidPassword = await bcrypt.compare(trimmedPassword, user.password);
     console.log('Password validation result:', isValidPassword);
