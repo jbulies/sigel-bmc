@@ -6,7 +6,7 @@ import pool from '../config/database';
 import { sendPasswordResetEmail } from '../services/email.service';
 
 const JWT_SECRET = process.env.JWT_SECRET || 'your-secret-key';
-const SALT = '$2a$10$DaZ.h.5hZNlMQNKRGHCYWu'; // Salt fijo para todas las contraseñas
+const SALT_ROUNDS = 10;
 
 export const login = async (req: Request, res: Response) => {
   try {
@@ -34,7 +34,7 @@ export const login = async (req: Request, res: Response) => {
 
     const user = users[0];
     
-    // Usar bcrypt.compare en lugar de comparación directa de hashes
+    // Usar bcrypt.compare para comparar contraseñas
     const isValid = await bcrypt.compare(password, user.password);
     console.log('Password comparison result:', isValid);
 
@@ -129,8 +129,8 @@ export const resetPassword = async (req: Request, res: Response) => {
       });
     }
 
-    // Generar el hash de la nueva contraseña usando bcrypt
-    const hashedPassword = await bcrypt.hash(password, SALT);
+    // Generar hash con bcrypt usando SALT_ROUNDS
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     await pool.query(
       'UPDATE users SET password = ?, reset_token = NULL, reset_token_expires = NULL WHERE id = ?',
@@ -168,8 +168,8 @@ export const register = async (req: Request, res: Response) => {
 
     const invitation = invitations[0];
     
-    // Generar el hash de la contraseña usando bcrypt
-    const hashedPassword = await bcrypt.hash(password, SALT);
+    // Generar hash con bcrypt usando SALT_ROUNDS
+    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
 
     await pool.query('BEGIN');
 
