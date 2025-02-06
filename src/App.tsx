@@ -12,7 +12,6 @@ import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
-import Index from "./pages/Index";
 
 const queryClient = new QueryClient();
 
@@ -55,14 +54,12 @@ const App = () => {
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Ruta raíz */}
+              {/* Ruta raíz redirige al dashboard */}
               <Route 
                 path="/" 
                 element={
                   <PrivateRoute>
-                    <Layout>
-                      <Index />
-                    </Layout>
+                    <Navigate to="/dashboard" replace />
                   </PrivateRoute>
                 } 
               />
