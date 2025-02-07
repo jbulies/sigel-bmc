@@ -1,10 +1,8 @@
-
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-// Get the base URL dynamically
-const API_BASE_URL = window.location.origin;
+const API_BASE_URL = 'http://localhost:8080';
 
 interface User {
   id: number;
@@ -28,7 +26,15 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  // Fetch user profile on mount and token change
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUserProfile(token);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
   const fetchUserProfile = async (token: string) => {
     try {
       const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
@@ -40,41 +46,34 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       if (response.ok) {
         const data = await response.json();
         setUser(data.user);
-        return true;
       } else {
         localStorage.removeItem('token');
-        return false;
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       localStorage.removeItem('token');
-      return false;
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Check authentication status on mount
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchUserProfile(token);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
   const login = useCallback(async (email: string, password: string) => {
     try {
+      console.log('Attempting login with:', { email, passwordLength: password.length });
       const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ email, password: password.trim() }),
+        body: JSON.stringify({ 
+          email, 
+          password: password.trim() // Asegurarse de que la contraseña esté limpia
+        }),
       });
 
+      console.log('Server response status:', response.status);
       const data = await response.json();
+      console.log('Response data:', data);
 
       if (response.ok) {
         setUser(data.user);
@@ -82,6 +81,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         toast.success('Inicio de sesión exitoso');
         navigate('/');
       } else {
+        console.error('Response error:', data);
         toast.error(data.message || 'Error al iniciar sesión');
       }
     } catch (error) {
