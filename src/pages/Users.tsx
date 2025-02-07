@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { Search } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -9,6 +10,8 @@ import { User } from "@/types/user";
 import { toast } from "sonner";
 import { useQuery } from "@tanstack/react-query";
 
+const API_BASE_URL = 'http://localhost:8080';
+
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
@@ -16,12 +19,15 @@ const Users = () => {
   const { data: users = [], isLoading } = useQuery({
     queryKey: ["users"],
     queryFn: async () => {
-      const response = await fetch("/api/users", {
+      const response = await fetch(`${API_BASE_URL}/api/users`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
-      if (!response.ok) throw new Error("Error al obtener usuarios");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Error al obtener usuarios");
+      }
       return response.json();
     },
   });
@@ -34,7 +40,7 @@ const Users = () => {
 
   const handleEditUser = async (updatedUser: User) => {
     try {
-      const response = await fetch(`/api/users/${updatedUser.id}`, {
+      const response = await fetch(`${API_BASE_URL}/api/users/${updatedUser.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -43,28 +49,34 @@ const Users = () => {
         body: JSON.stringify(updatedUser),
       });
 
-      if (!response.ok) throw new Error("Error al actualizar usuario");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Error al actualizar usuario");
+      }
 
       toast.success("Usuario actualizado correctamente");
     } catch (error) {
-      toast.error("Error al actualizar usuario");
+      toast.error(error instanceof Error ? error.message : "Error al actualizar usuario");
     }
   };
 
   const handleDeactivateUser = async (user: User) => {
     try {
-      const response = await fetch(`/api/users/${user.id}/deactivate`, {
-        method: "PUT",
+      const response = await fetch(`${API_BASE_URL}/api/users/${user.id}/deactivate`, {
+        method: "PATCH",
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
 
-      if (!response.ok) throw new Error("Error al desactivar usuario");
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || "Error al desactivar usuario");
+      }
 
       toast.success("Usuario desactivado correctamente");
     } catch (error) {
-      toast.error("Error al desactivar usuario");
+      toast.error(error instanceof Error ? error.message : "Error al desactivar usuario");
     }
   };
 

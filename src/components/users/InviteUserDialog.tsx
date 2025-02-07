@@ -32,6 +32,8 @@ import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
 import { useQueryClient } from "@tanstack/react-query";
 
+const API_BASE_URL = 'http://localhost:8080';
+
 const inviteFormSchema = z.object({
   email: z.string().email("Ingresa un email válido"),
   role: z.enum(["Usuario", "Logístico", "Informático"], {
@@ -56,7 +58,7 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
 
   const onSubmit = async (values: z.infer<typeof inviteFormSchema>) => {
     try {
-      const response = await fetch('/api/invitations', {
+      const response = await fetch(`${API_BASE_URL}/api/invitations`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -66,8 +68,8 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
       });
 
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.message || 'Error al enviar la invitación');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Error al enviar la invitación');
       }
 
       toast.success("Invitación enviada correctamente");
