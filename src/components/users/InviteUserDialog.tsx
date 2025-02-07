@@ -1,3 +1,4 @@
+
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -29,6 +30,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { UserPlus } from "lucide-react";
 import { toast } from "sonner";
+import { useQueryClient } from "@tanstack/react-query";
 
 const inviteFormSchema = z.object({
   email: z.string().email("Ingresa un email válido"),
@@ -43,6 +45,7 @@ interface InviteUserDialogProps {
 }
 
 const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
+  const queryClient = useQueryClient();
   const form = useForm<z.infer<typeof inviteFormSchema>>({
     resolver: zodResolver(inviteFormSchema),
     defaultValues: {
@@ -53,13 +56,26 @@ const InviteUserDialog = ({ open, onOpenChange }: InviteUserDialogProps) => {
 
   const onSubmit = async (values: z.infer<typeof inviteFormSchema>) => {
     try {
-      // TODO: Implement actual invitation logic
-      console.log("Inviting user:", values);
+      const response = await fetch('/api/invitations', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${localStorage.getItem('token')}`
+        },
+        body: JSON.stringify(values),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || 'Error al enviar la invitación');
+      }
+
       toast.success("Invitación enviada correctamente");
+      queryClient.invalidateQueries({ queryKey: ['pendingInvitations'] });
       onOpenChange(false);
       form.reset();
     } catch (error) {
-      toast.error("Error al enviar la invitación");
+      toast.error(error instanceof Error ? error.message : "Error al enviar la invitación");
     }
   };
 

@@ -1,13 +1,11 @@
+
 import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
   FileText, 
-  Users, 
-  Settings,
-  Menu,
-  X
+  Users
 } from "lucide-react";
 import { translations } from "@/translations/es";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,7 +20,6 @@ const Sidebar = () => {
     { icon: LayoutDashboard, label: menu.dashboard, path: "/", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
     { icon: FileText, label: menu.reports, path: "/reports", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
     { icon: Users, label: menu.users, path: "/users", roles: ["Administrador"] },
-    { icon: Settings, label: menu.settings, path: "/settings", roles: ["Administrador"] },
   ].filter(item => item.roles.includes(user?.role || ""));
 
   const toggleSidebar = () => setIsOpen(!isOpen);

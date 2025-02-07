@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -51,30 +52,33 @@ const Profile = () => {
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     setIsLoading(true);
     try {
-      const response = await fetch('http://localhost:3000/api/users/profile', {
+      const response = await fetch('/api/users/profile', {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           'Authorization': `Bearer ${localStorage.getItem('token')}`
         },
-        body: JSON.stringify(values),
+        body: JSON.stringify({
+          name: values.name,
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        }),
       });
 
-      const data = await response.json();
-
-      if (response.ok) {
-        toast.success("Perfil actualizado correctamente");
-        form.reset({
-          name: values.name,
-          currentPassword: "",
-          newPassword: "",
-          confirmPassword: "",
-        });
-      } else {
-        toast.error(data.message || "Error al actualizar el perfil");
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Error al actualizar el perfil");
       }
+
+      toast.success("Perfil actualizado correctamente");
+      form.reset({
+        name: values.name,
+        currentPassword: "",
+        newPassword: "",
+        confirmPassword: "",
+      });
     } catch (error) {
-      toast.error("Error al conectar con el servidor");
+      toast.error(error instanceof Error ? error.message : "Error al actualizar el perfil");
     } finally {
       setIsLoading(false);
     }
@@ -120,7 +124,7 @@ const Profile = () => {
                 name="newPassword"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Nueva Contraseña (opcional)</FormLabel>
+                    <FormLabel>Nueva Contraseña</FormLabel>
                     <FormControl>
                       <Input type="password" {...field} />
                     </FormControl>

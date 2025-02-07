@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -5,9 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 import { Report } from "@/types/report";
 import { Edit } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface EditReportDialogProps {
   report: Report;
@@ -16,8 +18,17 @@ interface EditReportDialogProps {
 export function EditReportDialog({ report }: EditReportDialogProps) {
   const [open, setOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
+  const { user } = useAuth();
   const queryClient = useQueryClient();
+
+  const canEditStatus = () => {
+    if (report.status === "Resuelto") return false;
+    if (user?.role === "Administrador") return true;
+    if (user?.role === "Logístico" && report.department === "Logística") return true;
+    if (user?.role === "Informático" && report.department === "Informática") return true;
+    if (user?.id === report.created_by && report.status === "Pendiente") return true;
+    return false;
+  };
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -43,23 +54,17 @@ export function EditReportDialog({ report }: EditReportDialogProps) {
 
       if (!response.ok) throw new Error("Error al actualizar el reporte");
 
-      toast({
-        title: "Reporte actualizado",
-        description: "El reporte ha sido actualizado exitosamente",
-      });
-
+      toast.success("Reporte actualizado correctamente");
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       setOpen(false);
     } catch (error) {
-      toast({
-        title: "Error",
-        description: "No se pudo actualizar el reporte",
-        variant: "destructive",
-      });
+      toast.error("No se pudo actualizar el reporte");
     } finally {
       setIsLoading(false);
     }
   };
+
+  if (!canEditStatus()) return null;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
