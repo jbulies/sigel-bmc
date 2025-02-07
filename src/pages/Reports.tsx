@@ -32,6 +32,7 @@ const Reports = () => {
     if (!user) return false;
     const userWithStatus: User = {
       ...user,
+      role: user.role as "Usuario" | "Logístico" | "Informático" | "Administrador",
       status: "Activo" // Default to active since auth context user is logged in
     };
     return canEditReport(report, userWithStatus);
