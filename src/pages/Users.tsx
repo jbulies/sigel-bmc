@@ -7,35 +7,24 @@ import InviteUserDialog from "@/components/users/InviteUserDialog";
 import PendingInvitationsTable from "@/components/users/PendingInvitationsTable";
 import { User } from "@/types/user";
 import { toast } from "sonner";
-
-const mockUsers: User[] = [
-  {
-    id: 1,
-    name: "Juan Pérez",
-    email: "juan@ejemplo.com",
-    role: "Usuario",
-    status: "Activo",
-  },
-  {
-    id: 2,
-    name: "María García",
-    email: "maria@ejemplo.com",
-    role: "Logístico",
-    status: "Activo",
-  },
-  {
-    id: 3,
-    name: "Carlos López",
-    email: "carlos@ejemplo.com",
-    role: "Informático",
-    status: "Inactivo",
-  },
-];
+import { useQuery } from "@tanstack/react-query";
 
 const Users = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
-  const [users, setUsers] = useState(mockUsers);
+
+  const { data: users = [], isLoading } = useQuery({
+    queryKey: ["users"],
+    queryFn: async () => {
+      const response = await fetch("/api/users", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Error al obtener usuarios");
+      return response.json();
+    },
+  });
 
   const filteredUsers = users.filter(
     (user) =>
@@ -43,19 +32,43 @@ const Users = () => {
       user.email.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  const handleEditUser = (updatedUser: User) => {
-    setUsers(users.map(user => 
-      user.id === updatedUser.id ? updatedUser : user
-    ));
-    toast.success("Usuario actualizado correctamente");
+  const handleEditUser = async (updatedUser: User) => {
+    try {
+      const response = await fetch(`/api/users/${updatedUser.id}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(updatedUser),
+      });
+
+      if (!response.ok) throw new Error("Error al actualizar usuario");
+
+      toast.success("Usuario actualizado correctamente");
+    } catch (error) {
+      toast.error("Error al actualizar usuario");
+    }
   };
 
-  const handleDeactivateUser = (user: User) => {
-    setUsers(users.map(u => 
-      u.id === user.id ? { ...u, status: "Inactivo" } : u
-    ));
-    toast.success("Usuario desactivado correctamente");
+  const handleDeactivateUser = async (user: User) => {
+    try {
+      const response = await fetch(`/api/users/${user.id}/deactivate`, {
+        method: "PUT",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al desactivar usuario");
+
+      toast.success("Usuario desactivado correctamente");
+    } catch (error) {
+      toast.error("Error al desactivar usuario");
+    }
   };
+
+  if (isLoading) return <div>Cargando...</div>;
 
   return (
     <div className="space-y-8 animate-fade-in">

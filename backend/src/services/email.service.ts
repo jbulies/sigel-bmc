@@ -29,7 +29,13 @@ export const sendInvitationEmail = async (email: string, token: string) => {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Invitation email sent successfully to:', email);
+  } catch (error) {
+    console.error('Error sending invitation email:', error);
+    throw error;
+  }
 };
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
@@ -49,5 +55,11 @@ export const sendPasswordResetEmail = async (email: string, token: string) => {
     `
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    await transporter.sendMail(mailOptions);
+    console.log('Password reset email sent successfully to:', email);
+  } catch (error) {
+    console.error('Error sending password reset email:', error);
+    throw error;
+  }
 };

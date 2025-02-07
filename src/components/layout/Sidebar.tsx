@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
@@ -7,42 +7,25 @@ import {
   Users, 
   Settings,
   Menu,
-  X,
-  LogOut,
-  User
+  X
 } from "lucide-react";
 import { translations } from "@/translations/es";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { useAuth } from "@/contexts/AuthContext";
-import { toast } from "sonner";
 
 const Sidebar = () => {
   const [isOpen, setIsOpen] = useState(true);
   const location = useLocation();
-  const navigate = useNavigate();
-  const { menu, profile } = translations;
-  const { logout } = useAuth();
+  const { menu } = translations;
+  const { user } = useAuth();
 
   const menuItems = [
-    { icon: LayoutDashboard, label: menu.dashboard, path: "/" },
-    { icon: FileText, label: menu.reports, path: "/reports" },
-    { icon: Users, label: menu.users, path: "/users" },
-    { icon: Settings, label: menu.settings, path: "/settings" },
-  ];
+    { icon: LayoutDashboard, label: menu.dashboard, path: "/", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
+    { icon: FileText, label: menu.reports, path: "/reports", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
+    { icon: Users, label: menu.users, path: "/users", roles: ["Administrador"] },
+    { icon: Settings, label: menu.settings, path: "/settings", roles: ["Administrador"] },
+  ].filter(item => item.roles.includes(user?.role || ""));
 
   const toggleSidebar = () => setIsOpen(!isOpen);
-
-  const handleLogout = async () => {
-    await logout();
-    toast.success("Sesión cerrada exitosamente");
-    navigate("/auth/login");
-  };
 
   return (
     <>
@@ -91,37 +74,6 @@ const Sidebar = () => {
               </Link>
             ))}
           </nav>
-
-          <div className="p-4 border-t border-border">
-            <DropdownMenu>
-              <DropdownMenuTrigger className="w-full">
-                <div className={cn(
-                  "flex items-center gap-3 px-4 py-2 rounded-md",
-                  "hover:bg-accent hover:text-accent-foreground",
-                  "transition-colors duration-200 ease-in-out"
-                )}>
-                  <div className="w-8 h-8 rounded-full bg-primary flex items-center justify-center text-primary-foreground">
-                    <User size={16} />
-                  </div>
-                  <div className="text-left">
-                    <p className="text-sm font-medium">Juan Pérez</p>
-                    <p className="text-xs text-muted-foreground">{profile.role.administrator}</p>
-                  </div>
-                </div>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-56">
-                <DropdownMenuItem onClick={() => navigate("/profile")}>
-                  <User className="mr-2 h-4 w-4" />
-                  <span>{profile.myProfile}</span>
-                </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleLogout} className="text-destructive">
-                  <LogOut className="mr-2 h-4 w-4" />
-                  <span>{profile.logout}</span>
-                </DropdownMenuItem>
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
         </div>
       </aside>
     </>

@@ -1,5 +1,4 @@
 import { Bell, User, LogOut, Settings } from "lucide-react";
-import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -10,6 +9,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "react-router-dom";
 import { translations } from "@/translations/es";
+import NotificationDropdown from "@/components/notifications/NotificationDropdown";
 
 const Header = () => {
   const { user, logout } = useAuth();
@@ -25,7 +25,8 @@ const Header = () => {
           
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon">
+              <Button variant="ghost" className="flex items-center gap-2">
+                <span className="hidden sm:inline-block">{user?.name}</span>
                 <User className="h-5 w-5" />
               </Button>
             </DropdownMenuTrigger>
