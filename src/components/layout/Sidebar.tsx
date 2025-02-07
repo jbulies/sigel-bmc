@@ -5,7 +5,9 @@ import { cn } from "@/lib/utils";
 import { 
   LayoutDashboard, 
   FileText, 
-  Users
+  Users,
+  Menu,
+  X
 } from "lucide-react";
 import { translations } from "@/translations/es";
 import { useAuth } from "@/contexts/AuthContext";

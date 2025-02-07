@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -8,7 +9,6 @@ import Layout from "./components/layout/Layout";
 import Dashboard from "./pages/Dashboard";
 import Reports from "./pages/Reports";
 import Users from "./pages/Users";
-import Settings from "./pages/Settings";
 import Profile from "./pages/Profile";
 import NotFound from "./pages/NotFound";
 import Login from "./pages/auth/Login";
@@ -101,16 +101,6 @@ const App = () => {
                   <PrivateRoute>
                     <Layout>
                       <Users />
-                    </Layout>
-                  </PrivateRoute>
-                }
-              />
-              <Route
-                path="/settings"
-                element={
-                  <PrivateRoute>
-                    <Layout>
-                      <Settings />
                     </Layout>
                   </PrivateRoute>
                 }
