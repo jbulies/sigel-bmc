@@ -1,3 +1,4 @@
+
 import { Card } from "@/components/ui/card";
 import { ReportFilters } from "@/components/reports/ReportFilters";
 import { useReports } from "@/hooks/useReports";
@@ -11,6 +12,7 @@ import { useReportActions } from "@/hooks/useReportActions";
 import { ReportHeader } from "@/components/reports/ReportHeader";
 import { exportReportsToPDF } from "@/utils/reportExport";
 import { Report } from "@/types/report";
+import { User } from "@/types/user";
 
 const Reports = () => {
   const { user } = useAuth();
@@ -23,6 +25,16 @@ const Reports = () => {
 
   const handleEdit = (report: Report) => {
     // Implementar edición
+  };
+
+  // Ensure user is of type User before passing to canEditReport
+  const checkEditPermission = (report: Report) => {
+    if (!user) return false;
+    const userWithStatus: User = {
+      ...user,
+      status: "Activo" // Default to active since auth context user is logged in
+    };
+    return canEditReport(report, userWithStatus);
   };
 
   return (
@@ -53,7 +65,7 @@ const Reports = () => {
                 report={report}
                 onDelete={handleDelete}
                 onEdit={handleEdit}
-                canEditReport={(report) => canEditReport(report, user)}
+                canEditReport={checkEditPermission}
               />
             ))}
           </div>
@@ -62,7 +74,7 @@ const Reports = () => {
             reports={filteredReports || []}
             onDelete={handleDelete}
             onEdit={handleEdit}
-            canEditReport={(report) => canEditReport(report, user)}
+            canEditReport={checkEditPermission}
           />
         )}
       </Card>
