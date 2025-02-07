@@ -52,7 +52,8 @@ const Profile = () => {
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     setIsLoading(true);
     try {
-      const response = await fetch('/api/users/profile', {
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const response = await fetch(`${baseUrl}/api/users/profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

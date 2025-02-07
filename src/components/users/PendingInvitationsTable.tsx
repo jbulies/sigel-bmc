@@ -1,4 +1,5 @@
-import { useState } from "react";
+
+import { useState, useEffect } from "react";
 import {
   Table,
   TableBody,
@@ -9,43 +10,71 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 
 interface Invitation {
   id: number;
   email: string;
   role: string;
   status: "Pendiente" | "Aceptada" | "Expirada";
-  createdAt: string;
+  created_at: string;
 }
 
-const mockInvitations: Invitation[] = [
-  {
-    id: 1,
-    email: "usuario1@ejemplo.com",
-    role: "Usuario",
-    status: "Pendiente",
-    createdAt: "2024-03-15T10:00:00",
-  },
-  {
-    id: 2,
-    email: "usuario2@ejemplo.com",
-    role: "Logístico",
-    status: "Pendiente",
-    createdAt: "2024-03-15T11:30:00",
-  },
-];
-
 const PendingInvitationsTable = () => {
-  const [invitations, setInvitations] = useState<Invitation[]>(mockInvitations);
+  const queryClient = useQueryClient();
+  const { data: invitations = [], isLoading } = useQuery({
+    queryKey: ["pendingInvitations"],
+    queryFn: async () => {
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const response = await fetch(`${baseUrl}/api/invitations/pending`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      if (!response.ok) throw new Error("Error al obtener invitaciones");
+      return response.json();
+    },
+  });
 
-  const handleResendInvitation = (id: number) => {
-    toast.success("Invitación reenviada correctamente");
+  const handleResendInvitation = async (id: number) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const response = await fetch(`${baseUrl}/api/invitations/${id}/resend`, {
+        method: "POST",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al reenviar invitación");
+
+      toast.success("Invitación reenviada correctamente");
+      queryClient.invalidateQueries({ queryKey: ["pendingInvitations"] });
+    } catch (error) {
+      toast.error("Error al reenviar la invitación");
+    }
   };
 
-  const handleCancelInvitation = (id: number) => {
-    setInvitations(invitations.filter((inv) => inv.id !== id));
-    toast.success("Invitación cancelada correctamente");
+  const handleCancelInvitation = async (id: number) => {
+    try {
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const response = await fetch(`${baseUrl}/api/invitations/${id}`, {
+        method: "DELETE",
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+
+      if (!response.ok) throw new Error("Error al cancelar invitación");
+
+      toast.success("Invitación cancelada correctamente");
+      queryClient.invalidateQueries({ queryKey: ["pendingInvitations"] });
+    } catch (error) {
+      toast.error("Error al cancelar la invitación");
+    }
   };
+
+  if (isLoading) return <div>Cargando invitaciones...</div>;
 
   return (
     <div className="space-y-4">
@@ -61,7 +90,7 @@ const PendingInvitationsTable = () => {
           </TableRow>
         </TableHeader>
         <TableBody>
-          {invitations.map((invitation) => (
+          {invitations.map((invitation: Invitation) => (
             <TableRow key={invitation.id}>
               <TableCell>{invitation.email}</TableCell>
               <TableCell>{invitation.role}</TableCell>
@@ -71,7 +100,7 @@ const PendingInvitationsTable = () => {
                 </span>
               </TableCell>
               <TableCell>
-                {new Date(invitation.createdAt).toLocaleDateString()}
+                {new Date(invitation.created_at).toLocaleDateString()}
               </TableCell>
               <TableCell className="text-right space-x-2">
                 <Button

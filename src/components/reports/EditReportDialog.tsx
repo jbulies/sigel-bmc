@@ -43,7 +43,8 @@ export function EditReportDialog({ report }: EditReportDialogProps) {
     };
 
     try {
-      const response = await fetch(`/api/reports/${report.id}`, {
+      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
+      const response = await fetch(`${baseUrl}/api/reports/${report.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -52,24 +53,26 @@ export function EditReportDialog({ report }: EditReportDialogProps) {
         body: JSON.stringify(data),
       });
 
-      if (!response.ok) throw new Error("Error al actualizar el reporte");
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al actualizar el reporte");
+      }
 
       toast.success("Reporte actualizado correctamente");
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       setOpen(false);
     } catch (error) {
-      toast.error("No se pudo actualizar el reporte");
+      console.error("Error updating report:", error);
+      toast.error(error instanceof Error ? error.message : "Error al actualizar el reporte");
     } finally {
       setIsLoading(false);
     }
   };
 
-  if (!canEditStatus()) return null;
-
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button variant="outline" size="icon">
+        <Button variant="outline" size="icon" disabled={!canEditStatus()}>
           <Edit className="h-4 w-4" />
         </Button>
       </DialogTrigger>
