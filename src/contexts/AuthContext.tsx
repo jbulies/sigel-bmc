@@ -1,14 +1,17 @@
+
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 
-const API_BASE_URL = 'http://localhost:8080';
+// Get API URL from environment variable, fallback to window.location.origin
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
 
 interface User {
   id: number;
   name: string;
   email: string;
-  role: string;
+  role: "Usuario" | "Logístico" | "Informático" | "Administrador";
+  status?: string;
 }
 
 interface AuthContextType {
@@ -26,18 +29,9 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const token = localStorage.getItem('token');
-    if (token) {
-      fetchUserProfile(token);
-    } else {
-      setIsLoading(false);
-    }
-  }, []);
-
   const fetchUserProfile = async (token: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
+      const response = await fetch(`${API_BASE_URL}/users/profile`, {
         headers: {
           'Authorization': `Bearer ${token}`
         }
@@ -45,7 +39,17 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       
       if (response.ok) {
         const data = await response.json();
-        setUser(data.user);
+        if (data.user) {
+          // Ensure the role matches one of the allowed types
+          const userWithTypedRole = {
+            ...data.user,
+            role: data.user.role as User['role'],
+            status: data.user.status || 'Activo'
+          };
+          setUser(userWithTypedRole);
+        } else {
+          localStorage.removeItem('token');
+        }
       } else {
         localStorage.removeItem('token');
       }
@@ -57,26 +61,36 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     }
   };
 
+  // Check for token and fetch user profile on mount
+  useEffect(() => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      fetchUserProfile(token);
+    } else {
+      setIsLoading(false);
+    }
+  }, []);
+
   const login = useCallback(async (email: string, password: string) => {
     try {
-      console.log('Attempting login with:', { email, passwordLength: password.length });
-      const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          email, 
-          password: password.trim() // Asegurarse de que la contraseña esté limpia
-        }),
+        body: JSON.stringify({ email, password: password.trim() }),
       });
 
-      console.log('Server response status:', response.status);
       const data = await response.json();
-      console.log('Response data:', data);
 
       if (response.ok) {
-        setUser(data.user);
+        // Ensure the role matches one of the allowed types
+        const userWithTypedRole = {
+          ...data.user,
+          role: data.user.role as User['role'],
+          status: data.user.status || 'Activo'
+        };
+        setUser(userWithTypedRole);
         localStorage.setItem('token', data.token);
         toast.success('Inicio de sesión exitoso');
         navigate('/');
