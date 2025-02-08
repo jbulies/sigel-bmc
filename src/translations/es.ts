@@ -1,3 +1,4 @@
+
 export const translations = {
   common: {
     welcome: "Bienvenido a SIGEL",
@@ -68,8 +69,10 @@ export const translations = {
     exportPDF: "Exportar a PDF",
     deleteConfirm: "¿Está seguro de eliminar este reporte?",
     deleteSuccess: "Reporte eliminado exitosamente",
+    deleteError: "Error al eliminar el reporte",
     createSuccess: "Reporte creado exitosamente",
     updateSuccess: "Reporte actualizado exitosamente",
+    updateError: "Error al actualizar el reporte"
   },
   profile: {
     myProfile: "Mi Perfil",
