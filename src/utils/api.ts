@@ -1,7 +1,8 @@
 
-export const API_BASE_URL = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
+const API_BASE_URL = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
 
 export const api = {
+  API_BASE_URL,
   get: async (endpoint: string) => {
     try {
       const token = localStorage.getItem("token");
@@ -129,3 +130,5 @@ export const api = {
     }
   },
 };
+
+export { API_BASE_URL };
