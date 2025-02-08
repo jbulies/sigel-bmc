@@ -1,12 +1,24 @@
+
 <IfModule mod_rewrite.c>
   RewriteEngine On
   RewriteBase /
-  RewriteRule ^index\.html$ - [L]
+  
+  # If the request is for an actual file or directory, serve it directly
   RewriteCond %{REQUEST_FILENAME} !-f
   RewriteCond %{REQUEST_FILENAME} !-d
-  RewriteCond %{REQUEST_FILENAME} !-l
-  RewriteRule . /index.html [L]
+
+  # If the request starts with /api, proxy it to the backend server
+  RewriteCond %{REQUEST_URI} ^/api/
+  RewriteRule ^api/(.*) http://localhost:8080/api/$1 [P,L]
+
+  # For all other requests, serve the React app's index.html
+  RewriteRule ^ index.html [L]
 </IfModule>
+
+# Enable CORS
+Header set Access-Control-Allow-Origin "*"
+Header set Access-Control-Allow-Methods "GET, POST, PUT, DELETE, OPTIONS"
+Header set Access-Control-Allow-Headers "Content-Type, Authorization"
 
 # PHP Settings
 <IfModule mod_php.c>
@@ -47,3 +59,9 @@ AddType application/x-font-woff2 .woff2
   ExpiresByType text/css "access plus 1 month"
   ExpiresByType application/javascript "access plus 1 month"
 </IfModule>
+
+# Security headers
+Header set X-Content-Type-Options "nosniff"
+Header set X-XSS-Protection "1; mode=block"
+Header set X-Frame-Options "SAMEORIGIN"
+Header set Referrer-Policy "strict-origin-when-cross-origin"

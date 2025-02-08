@@ -16,8 +16,7 @@ import { Input } from "@/components/ui/input";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
-
-const API_BASE_URL = 'http://localhost:8080';
+import { api } from "@/utils/api";
 
 const profileSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
@@ -54,23 +53,11 @@ const Profile = () => {
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     setIsLoading(true);
     try {
-      const response = await fetch(`${API_BASE_URL}/api/users/profile`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-          'Authorization': `Bearer ${localStorage.getItem('token')}`
-        },
-        body: JSON.stringify({
-          name: values.name,
-          currentPassword: values.currentPassword,
-          newPassword: values.newPassword,
-        }),
+      await api.put("/users/profile", {
+        name: values.name,
+        currentPassword: values.currentPassword,
+        newPassword: values.newPassword,
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => null);
-        throw new Error(errorData?.message || "Error al actualizar el perfil");
-      }
 
       toast.success("Perfil actualizado correctamente");
       form.reset({
@@ -80,7 +67,7 @@ const Profile = () => {
         confirmPassword: "",
       });
     } catch (error) {
-      toast.error(error instanceof Error ? error.message : "Error al actualizar el perfil");
+      toast.error("Error al actualizar el perfil");
     } finally {
       setIsLoading(false);
     }

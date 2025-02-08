@@ -4,32 +4,41 @@ import { translations } from "@/translations/es";
 import { useQueryClient } from "@tanstack/react-query";
 import { Report } from "@/types/report";
 import { User } from "@/types/user";
+import { api } from "@/utils/api";
 
 export const useReportActions = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
 
-  const handleDelete = async (id: number) => {
+  const handleEdit = async (report: Report) => {
     try {
-      const response = await fetch(`/api/reports/${id}`, {
-        method: "DELETE",
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-      });
-
-      if (!response.ok) throw new Error(translations.common.error);
-
+      await api.put(`/reports/${report.id}`, report);
       toast({
         title: translations.common.success,
-        description: translations.reports.deleteSuccess,
+        description: translations.reports.updateSuccess,
       });
-
       queryClient.invalidateQueries({ queryKey: ["reports"] });
     } catch (error) {
       toast({
         title: translations.common.error,
-        description: translations.common.error,
+        description: translations.reports.updateError,
+        variant: "destructive",
+      });
+    }
+  };
+
+  const handleDelete = async (id: number) => {
+    try {
+      await api.delete(`/reports/${id}`);
+      toast({
+        title: translations.common.success,
+        description: translations.reports.deleteSuccess,
+      });
+      queryClient.invalidateQueries({ queryKey: ["reports"] });
+    } catch (error) {
+      toast({
+        title: translations.common.error,
+        description: translations.reports.deleteError,
         variant: "destructive",
       });
     }
@@ -44,6 +53,7 @@ export const useReportActions = () => {
   };
 
   return {
+    handleEdit,
     handleDelete,
     canEditReport,
   };
