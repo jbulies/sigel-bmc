@@ -10,7 +10,7 @@ export const getProfile = async (req: Request, res: Response) => {
     const userId = req.user?.id;
 
     const [users]: any = await pool.query(
-      'SELECT id, name, email, role FROM users WHERE id = ?',
+      'SELECT id, name, email, role FROM users WHERE id = ? AND status = "Activo"',
       [userId]
     );
 
@@ -31,7 +31,7 @@ export const updateProfile = async (req: Request, res: Response) => {
     const { name, currentPassword, newPassword } = req.body;
 
     const [users]: any = await pool.query(
-      'SELECT * FROM users WHERE id = ?',
+      'SELECT * FROM users WHERE id = ? AND status = "Activo"',
       [userId]
     );
 
@@ -60,14 +60,16 @@ export const updateProfile = async (req: Request, res: Response) => {
       );
     }
 
+    const updatedUser = {
+      id: user.id,
+      name,
+      email: user.email,
+      role: user.role
+    };
+
     res.json({ 
       message: 'Perfil actualizado exitosamente',
-      user: {
-        id: user.id,
-        name,
-        email: user.email,
-        role: user.role
-      }
+      user: updatedUser
     });
   } catch (error) {
     console.error('Error al actualizar perfil:', error);
@@ -77,9 +79,11 @@ export const updateProfile = async (req: Request, res: Response) => {
 
 export const getUsers = async (req: Request, res: Response) => {
   try {
+    console.log('Obteniendo usuarios...');
     const [users]: any = await pool.query(
-      'SELECT id, name, email, role, status FROM users WHERE status = "Activo"'
+      'SELECT id, name, email, role, status FROM users'
     );
+    console.log('Usuarios recuperados:', users);
     res.json(users);
   } catch (error) {
     console.error('Error al obtener usuarios:', error);

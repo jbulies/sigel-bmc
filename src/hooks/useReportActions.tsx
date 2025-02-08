@@ -12,35 +12,47 @@ export const useReportActions = () => {
 
   const handleEdit = async (report: Report) => {
     try {
-      await api.put(`/reports/${report.id}`, report);
-      toast({
-        title: translations.common.success,
-        description: translations.reports.updateSuccess,
-      });
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      const response = await api.put(`/reports/${report.id}`, report);
+      if (response) {
+        toast({
+          title: translations.common.success,
+          description: translations.reports.updateSuccess,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["reports"] });
+        return true;
+      }
+      return false;
     } catch (error) {
+      console.error('Error al actualizar reporte:', error);
       toast({
         title: translations.common.error,
-        description: translations.reports.updateError,
+        description: translations.reports.updateError || 'Error al actualizar el reporte',
         variant: "destructive",
       });
+      return false;
     }
   };
 
   const handleDelete = async (id: number) => {
     try {
-      await api.delete(`/reports/${id}`);
-      toast({
-        title: translations.common.success,
-        description: translations.reports.deleteSuccess,
-      });
-      queryClient.invalidateQueries({ queryKey: ["reports"] });
+      const response = await api.delete(`/reports/${id}`);
+      if (response) {
+        toast({
+          title: translations.common.success,
+          description: translations.reports.deleteSuccess,
+        });
+        await queryClient.invalidateQueries({ queryKey: ["reports"] });
+        return true;
+      }
+      return false;
     } catch (error) {
+      console.error('Error al eliminar reporte:', error);
       toast({
         title: translations.common.error,
-        description: translations.reports.deleteError,
+        description: translations.reports.deleteError || 'Error al eliminar el reporte',
         variant: "destructive",
       });
+      return false;
     }
   };
 

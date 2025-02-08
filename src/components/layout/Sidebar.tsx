@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { cn } from "@/lib/utils";
 import { 
@@ -13,7 +13,11 @@ import { translations } from "@/translations/es";
 import { useAuth } from "@/contexts/AuthContext";
 
 const Sidebar = () => {
-  const [isOpen, setIsOpen] = useState(true);
+  const [isOpen, setIsOpen] = useState(() => {
+    const saved = localStorage.getItem("sidebarOpen");
+    return saved ? JSON.parse(saved) : true;
+  });
+  
   const location = useLocation();
   const { menu } = translations;
   const { user } = useAuth();
@@ -23,6 +27,10 @@ const Sidebar = () => {
     { icon: FileText, label: menu.reports, path: "/reports", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
     { icon: Users, label: menu.users, path: "/users", roles: ["Administrador"] },
   ].filter(item => item.roles.includes(user?.role || ""));
+
+  useEffect(() => {
+    localStorage.setItem("sidebarOpen", JSON.stringify(isOpen));
+  }, [isOpen]);
 
   const toggleSidebar = () => setIsOpen(!isOpen);
 
