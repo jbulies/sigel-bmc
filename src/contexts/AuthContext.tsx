@@ -2,9 +2,7 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-
-// Get API URL from environment variable, fallback to window.location.origin
-const API_BASE_URL = import.meta.env.VITE_API_URL || `${window.location.origin}/api`;
+import { api } from '@/utils/api';
 
 interface User {
   id: number;
@@ -20,6 +18,7 @@ interface AuthContextType {
   logout: () => void;
   isLoading: boolean;
   isAuthenticated: boolean;
+  updateUserProfile?: (user: User) => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -29,43 +28,32 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
-  const fetchUserProfile = async (token: string) => {
+  const updateUserProfile = async (updatedUser: User) => {
+    setUser(updatedUser);
+  };
+
+  const fetchUserProfile = async () => {
     try {
-      const response = await fetch(`${API_BASE_URL}/users/profile`, {
-        headers: {
-          'Authorization': `Bearer ${token}`
-        }
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.user) {
-          // Ensure the role matches one of the allowed types
-          const userWithTypedRole = {
-            ...data.user,
-            role: data.user.role as User['role'],
-            status: data.user.status || 'Activo'
-          };
-          setUser(userWithTypedRole);
-        } else {
-          localStorage.removeItem('token');
-        }
+      const userData = await api.get('/users/profile');
+      if (userData) {
+        setUser(userData);
       } else {
         localStorage.removeItem('token');
+        setUser(null);
       }
     } catch (error) {
       console.error('Error fetching user profile:', error);
       localStorage.removeItem('token');
+      setUser(null);
     } finally {
       setIsLoading(false);
     }
   };
 
-  // Check for token and fetch user profile on mount
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
-      fetchUserProfile(token);
+      fetchUserProfile();
     } else {
       setIsLoading(false);
     }
@@ -73,7 +61,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${api.API_BASE_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -84,13 +72,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
       const data = await response.json();
 
       if (response.ok) {
-        // Ensure the role matches one of the allowed types
-        const userWithTypedRole = {
-          ...data.user,
-          role: data.user.role as User['role'],
-          status: data.user.status || 'Activo'
-        };
-        setUser(userWithTypedRole);
+        setUser(data.user);
         localStorage.setItem('token', data.token);
         toast.success('Inicio de sesión exitoso');
         navigate('/');
@@ -117,6 +99,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     logout,
     isLoading,
     isAuthenticated: !!user,
+    updateUserProfile,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

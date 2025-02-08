@@ -1,3 +1,4 @@
+
 import { Request, Response } from 'express';
 import pool from '../config/database';
 import bcrypt from 'bcryptjs';
@@ -17,7 +18,7 @@ export const getProfile = async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Usuario no encontrado' });
     }
 
-    res.json({ user: users[0] });
+    res.json(users[0]);
   } catch (error) {
     console.error('Error al obtener perfil:', error);
     res.status(500).json({ message: 'Error al obtener perfil de usuario' });
@@ -40,24 +41,34 @@ export const updateProfile = async (req: Request, res: Response) => {
 
     const user = users[0];
 
-    if (currentPassword) {
+    if (currentPassword && newPassword) {
       const isValidPassword = await bcrypt.compare(currentPassword, user.password);
       if (!isValidPassword) {
         return res.status(400).json({ message: 'Contraseña actual incorrecta' });
       }
+
+      const hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
+
+      await pool.query(
+        'UPDATE users SET name = ?, password = ? WHERE id = ?',
+        [name, hashedPassword, userId]
+      );
+    } else {
+      await pool.query(
+        'UPDATE users SET name = ? WHERE id = ?',
+        [name, userId]
+      );
     }
 
-    let hashedPassword;
-    if (newPassword) {
-      hashedPassword = await bcrypt.hash(newPassword, SALT_ROUNDS);
-    }
-
-    await pool.query(
-      'UPDATE users SET name = ?, password = COALESCE(?, password) WHERE id = ?',
-      [name, hashedPassword, userId]
-    );
-
-    res.json({ message: 'Perfil actualizado exitosamente' });
+    res.json({ 
+      message: 'Perfil actualizado exitosamente',
+      user: {
+        id: user.id,
+        name,
+        email: user.email,
+        role: user.role
+      }
+    });
   } catch (error) {
     console.error('Error al actualizar perfil:', error);
     res.status(500).json({ message: 'Error al actualizar perfil de usuario' });
@@ -67,7 +78,7 @@ export const updateProfile = async (req: Request, res: Response) => {
 export const getUsers = async (req: Request, res: Response) => {
   try {
     const [users]: any = await pool.query(
-      'SELECT id, name, email, role, status FROM users'
+      'SELECT id, name, email, role, status FROM users WHERE status = "Activo"'
     );
     res.json(users);
   } catch (error) {

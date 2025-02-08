@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Report } from "@/types/report";
 import { Edit } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import { api } from "@/utils/api";
 
 interface EditReportDialogProps {
   report: Report;
@@ -22,11 +23,11 @@ export function EditReportDialog({ report }: EditReportDialogProps) {
   const queryClient = useQueryClient();
 
   const canEditStatus = () => {
+    if (!user) return false;
     if (report.status === "Resuelto") return false;
-    if (user?.role === "Administrador") return true;
-    if (user?.role === "Logístico" && report.department === "Logística") return true;
-    if (user?.role === "Informático" && report.department === "Informática") return true;
-    if (user?.id === report.created_by && report.status === "Pendiente") return true;
+    if (user.role === "Administrador") return true;
+    if (user.role === "Logístico" && report.department === "Logística") return true;
+    if (user.role === "Informático" && report.department === "Informática") return true;
     return false;
   };
 
@@ -43,27 +44,13 @@ export function EditReportDialog({ report }: EditReportDialogProps) {
     };
 
     try {
-      const baseUrl = import.meta.env.VITE_API_URL || window.location.origin;
-      const response = await fetch(`${baseUrl}/api/reports/${report.id}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Error al actualizar el reporte");
-      }
-
+      await api.put(`/reports/${report.id}`, data);
       toast.success("Reporte actualizado correctamente");
       queryClient.invalidateQueries({ queryKey: ["reports"] });
       setOpen(false);
     } catch (error) {
       console.error("Error updating report:", error);
-      toast.error(error instanceof Error ? error.message : "Error al actualizar el reporte");
+      toast.error("Error al actualizar el reporte");
     } finally {
       setIsLoading(false);
     }

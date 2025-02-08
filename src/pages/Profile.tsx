@@ -20,7 +20,7 @@ import { api } from "@/utils/api";
 
 const profileSchema = z.object({
   name: z.string().min(2, "El nombre debe tener al menos 2 caracteres"),
-  currentPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
+  currentPassword: z.string().optional(),
   newPassword: z.string().min(6, "La contraseña debe tener al menos 6 caracteres").optional(),
   confirmPassword: z.string().optional(),
 }).refine((data) => {
@@ -38,7 +38,7 @@ const profileSchema = z.object({
 
 const Profile = () => {
   const [isLoading, setIsLoading] = useState(false);
-  const { user } = useAuth();
+  const { user, updateUserProfile } = useAuth();
 
   const form = useForm<z.infer<typeof profileSchema>>({
     resolver: zodResolver(profileSchema),
@@ -53,11 +53,18 @@ const Profile = () => {
   const onSubmit = async (values: z.infer<typeof profileSchema>) => {
     setIsLoading(true);
     try {
-      await api.put("/users/profile", {
+      const updateData = {
         name: values.name,
-        currentPassword: values.currentPassword,
-        newPassword: values.newPassword,
-      });
+        ...(values.currentPassword && values.newPassword ? {
+          currentPassword: values.currentPassword,
+          newPassword: values.newPassword,
+        } : {})
+      };
+
+      await api.put("/users/profile", updateData);
+      if (updateUserProfile) {
+        await updateUserProfile({ ...user!, name: values.name });
+      }
 
       toast.success("Perfil actualizado correctamente");
       form.reset({
@@ -66,8 +73,8 @@ const Profile = () => {
         newPassword: "",
         confirmPassword: "",
       });
-    } catch (error) {
-      toast.error("Error al actualizar el perfil");
+    } catch (error: any) {
+      toast.error(error.message || "Error al actualizar el perfil");
     } finally {
       setIsLoading(false);
     }
