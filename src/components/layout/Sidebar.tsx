@@ -26,13 +26,13 @@ const Sidebar = () => {
     { icon: LayoutDashboard, label: menu.dashboard, path: "/", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
     { icon: FileText, label: menu.reports, path: "/reports", roles: ["Usuario", "Logístico", "Informático", "Administrador"] },
     { icon: Users, label: menu.users, path: "/users", roles: ["Administrador"] },
-  ].filter(item => item.roles.includes(user?.role || ""));
+  ].filter(item => user && item.roles.includes(user.role));
 
   useEffect(() => {
     localStorage.setItem("sidebarOpen", JSON.stringify(isOpen));
   }, [isOpen]);
 
-  const toggleSidebar = () => setIsOpen(!isOpen);
+  if (!user) return null;
 
   return (
     <>
@@ -42,7 +42,7 @@ const Sidebar = () => {
           "transition-colors duration-200 ease-in-out",
           "bg-background hover:bg-accent"
         )}
-        onClick={toggleSidebar}
+        onClick={() => setIsOpen(!isOpen)}
       >
         {isOpen ? <X size={20} /> : <Menu size={20} />}
       </button>

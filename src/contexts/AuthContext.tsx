@@ -2,15 +2,8 @@
 import React, { createContext, useContext, useState, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { api, API_BASE_URL } from '@/utils/api';
-
-interface User {
-  id: number;
-  name: string;
-  email: string;
-  role: "Usuario" | "Logístico" | "Informático" | "Administrador";
-  status?: string;
-}
+import { api } from '@/utils/api';
+import { User } from '@/types/user';
 
 interface AuthContextType {
   user: User | null;
@@ -61,7 +54,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
 
   const login = useCallback(async (email: string, password: string) => {
     try {
-      const response = await fetch(`${API_BASE_URL}/auth/login`, {
+      const response = await fetch(`${import.meta.env.VITE_API_URL}/auth/login`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

@@ -4,21 +4,30 @@ import dotenv from 'dotenv';
 
 dotenv.config();
 
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST,
-  port: Number(process.env.SMTP_PORT),
-  secure: process.env.SMTP_SECURE === 'true',
-  auth: {
-    user: process.env.SMTP_USER,
-    pass: process.env.SMTP_PASS
-  },
-  tls: {
-    rejectUnauthorized: false
+export const createTransporter = () => {
+  try {
+    const transporter = nodemailer.createTransport({
+      host: process.env.SMTP_HOST,
+      port: Number(process.env.SMTP_PORT),
+      secure: process.env.SMTP_SECURE === 'true',
+      auth: {
+        user: process.env.SMTP_USER,
+        pass: process.env.SMTP_PASS
+      },
+      tls: {
+        rejectUnauthorized: false
+      }
+    });
+    return transporter;
+  } catch (error) {
+    console.error('Error creating email transporter:', error);
+    throw error;
   }
-});
+};
 
 export const sendInvitationEmail = async (email: string, token: string) => {
   try {
+    const transporter = createTransporter();
     const registrationUrl = `${process.env.FRONTEND_URL}/auth/register?token=${token}`;
 
     const mailOptions = {
@@ -45,6 +54,7 @@ export const sendInvitationEmail = async (email: string, token: string) => {
 
 export const sendPasswordResetEmail = async (email: string, token: string) => {
   try {
+    const transporter = createTransporter();
     const resetUrl = `${process.env.FRONTEND_URL}/auth/reset-password?token=${token}`;
 
     const mailOptions = {

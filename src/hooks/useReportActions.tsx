@@ -12,6 +12,7 @@ export const useReportActions = () => {
 
   const handleEdit = async (report: Report) => {
     try {
+      console.log('Editando reporte:', report);
       const response = await api.put(`/reports/${report.id}`, report);
       if (response) {
         toast({
@@ -35,6 +36,7 @@ export const useReportActions = () => {
 
   const handleDelete = async (id: number) => {
     try {
+      console.log('Eliminando reporte:', id);
       const response = await api.delete(`/reports/${id}`);
       if (response) {
         toast({
